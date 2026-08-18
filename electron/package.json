@@ -14,6 +14,7 @@
   "build": {
     "appId": "com.notionish.app",
     "productName": "Notionish",
+    "asar": false,
     "directories": {
       "output": "dist"
     },
