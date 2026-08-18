@@ -37,6 +37,7 @@ report.json
 theme.json
 memory-page.png
 *.test-output.json
+屏幕截图*.png
 
 # ============ 系统文件 ============
 .DS_Store
