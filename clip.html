@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Notionish 网页剪藏</title>
+<style>
+  body{ font-family: system-ui,-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; max-width: 720px; margin: 40px auto; padding: 0 24px; line-height: 1.7; color: #37352f; }
+  h1{ font-size: 24px; margin-bottom: 4px; }
+  .sub{ color: #888; font-size: 14px; margin-bottom: 24px; }
+  .card{ border: 1px solid #e5e5e5; border-radius: 10px; padding: 18px 20px; margin: 16px 0; }
+  .drag{ display: inline-block; background: #2383e2; color: #fff; padding: 12px 22px; border-radius: 8px; font-size: 16px; font-weight: 600; text-decoration: none; cursor: grab; margin: 10px 0; }
+  .drag:hover{ background: #1c74c9; }
+  textarea{ width: 100%; height: 180px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+  ol li{ margin: 6px 0; }
+  code{ background: #f2f2f1; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  .note{ color: #888; font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>Notionish 网页剪藏</h1>
+  <div class="sub">把当前打开的网页正文（含标题、列表、代码、图片链接）剪藏成一篇 Notionish 笔记。基于 Mozilla Readability + Turndown，与 Obsidian Web Clipper 同款方案。</div>
+
+  <div class="card">
+    <div style="font-weight:600;margin-bottom:8px">① 拖拽下面的按钮到你的浏览器书签栏</div>
+    <a id="drag" class="drag" href="#" title="拖到书签栏">📥 剪藏到 Notionish</a>
+    <div class="note">拖不动？右键 → 复制链接地址，然后手动新建书签、把地址粘贴到「网址」栏。</div>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:600;margin-bottom:8px">② 使用</div>
+    <ol>
+      <li>确保 Notionish 已在 <code>http://127.0.0.1:8787</code> 运行。</li>
+      <li>在任意网页（如 Wikipedia、博客、教程）点击书签栏的「📥 剪藏到 Notionish」。</li>
+      <li>会自动复用已打开的 Notionish 标签页（首次剪藏则自动打开），内容追加到「待整理」。</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <div style="font-weight:600;margin-bottom:8px">书签代码（手动创建书签时复制这段）</div>
+    <textarea id="code" readonly></textarea>
+  </div>
+
+<script>
+(function () {
+  var B = "http://127.0.0.1:8787";
+  var src = "(function(){var B='" + B + "';var html='';try{html=document.documentElement.outerHTML}catch(e){}if(!html){alert('无法读取页面内容');return}var p={type:'notionish-clip-html',title:document.title,html:html,url:location.href};var w=window.open('','notionish-clip');if(!w){w=window.open(B,'notionish-clip');if(!w){alert('弹窗被拦截，请先打开 Notionish，再在浏览器地址栏右侧允许弹窗');return}}else{w=window.open(B,'notionish-clip')}[300,800,1800].forEach(function(ms){setTimeout(function(){try{w.postMessage(p,B)}catch(e){}},ms)})})()";
+  document.getElementById("code").value = "javascript:" + src;
+  document.getElementById("drag").href = "javascript:" + encodeURIComponent(src);
+})();
+</script>
+</body>
+</html>

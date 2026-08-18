@@ -1,0 +1,7 @@
+{
+  "ollamaUrl": "http://127.0.0.1:11434",
+  "embedModel": "nomic-embed-text",
+  "openaiBaseUrl": "https://api.deepseek.com",
+  "openaiApiKey": "sk-在此填入你的APIKey",
+  "openaiModel": "deepseek-chat"
+}

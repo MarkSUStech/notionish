@@ -1,0 +1,7 @@
+{
+  "id": "hello-world",
+  "name": "Hello World",
+  "version": "1.0.0",
+  "description": "示例插件：在侧栏底部添加问候语",
+  "author": "Notionish"
+}

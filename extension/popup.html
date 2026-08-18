@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body{ width: 240px; padding: 16px; font-family: system-ui, sans-serif; font-size: 13px; color: #333; margin: 0; }
+  h2{ font-size: 15px; margin: 0 0 8px; }
+  .sub{ color: #888; font-size: 12px; margin-bottom: 14px; }
+  .btn{ display: block; width: 100%; padding: 10px; border: none; border-radius: 6px;
+    font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 8px; }
+  .btn-clip{ background: #2383e2; color: #fff; }
+  .btn-clip:hover{ background: #1c74c9; }
+  .btn-clip:disabled{ background: #a0c4e8; cursor: default; }
+  .status{ font-size: 12px; margin-top: 8px; min-height: 16px; }
+  .status.ok{ color: #2e7d32; }
+  .status.err{ color: #c62828; }
+</style>
+</head>
+<body>
+  <h2>📥 剪藏到 Notionish</h2>
+  <div class="sub">将当前页面保存为笔记</div>
+  <button class="btn btn-clip" id="clipBtn">剪藏当前页面</button>
+  <div class="status" id="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>
