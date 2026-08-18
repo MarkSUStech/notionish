@@ -1,5 +1,13 @@
 # 📝 Notionish — Notion 风格网页笔记
 
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/MarkSUStech/notionish)](https://github.com/MarkSUStech/notionish/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/MarkSUStech/notionish)](https://github.com/MarkSUStech/notionish/issues)
+[![JavaScript](https://img.shields.io/badge/language-JavaScript-f7df1e.svg)](js/)
+[![零依赖](https://img.shields.io/badge/零依赖-Yes-brightgreen.svg)](#)
+[![English](https://img.shields.io/badge/English-README-blue.svg)](README.en.md)
+[![在线体验](https://img.shields.io/badge/在线体验-GitHub_Pages-blueviolet.svg)](https://marksustech.github.io/notionish/)
+
 一个 **100% 运行在浏览器本地** 的 Notion 风格笔记应用，零前端依赖、无需安装，数据保存在浏览器本地（IndexedDB，支持大文件；localStorage 作为镜像）。可选的内置零依赖 Node 服务提供 AI 接入、代码编译运行与 MCP 桥接能力。
 
 > 本仓库为本地优先的完整笔记应用：**离线可用、数据归你所有、可导出备份**。
@@ -25,6 +33,12 @@ node server.js
 # 然后访问 http://127.0.0.1:8787
 ```
 该服务会自动检测本机 `python`、`gcc/g++`、`javac/java` 编译器；未检测到时运行会提示。不运行代码时，用方式一/二打开即可正常编辑。
+
+### 🌐 在线体验（GitHub Pages）
+
+本项目前端零依赖，已可直接部署到 GitHub Pages：**https://marksustech.github.io/notionish/**
+
+> 在线版数据保存在你自己的浏览器本地（IndexedDB），无需任何后端；AI 接入、代码编译/运行与 MCP 桥接需要本地 `node server.js`。
 
 ### 本地 MCP 浏览器桥接
 
