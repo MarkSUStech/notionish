@@ -11,10 +11,18 @@ let serverProcess = null;
 // ---- 启动 server.js（子进程，避免阻塞 Electron） ----
 function startServer() {
   return new Promise((resolve, reject) => {
+    const fs = require("fs");
     const dataDir = path.join(app.getPath("userData"), "notionish-data");
-    require("fs").mkdirSync(dataDir, { recursive: true });
-    serverProcess = fork(path.join(ROOT, "server.js"), [], {
-      cwd: ROOT,
+    fs.mkdirSync(dataDir, { recursive: true });
+    // 定位 server.js：dev 在项目根；打包版(asar:false)在 resources/app/ 下
+    const candidates = [
+      path.join(ROOT, "server.js"),        // dev: electron/../server.js
+      path.join(__dirname, "server.js"),   // packed: resources/app/server.js
+    ];
+    const serverPath = candidates.find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
+    if (!serverPath) { reject(new Error("server.js not found in " + candidates.join(", "))); return; }
+    serverProcess = fork(serverPath, [], {
+      cwd: path.dirname(serverPath),
       env: { ...process.env, PORT: String(DEFAULT_PORT), NOTIONISH_DATA_DIR: dataDir },
       silent: true,
     });
