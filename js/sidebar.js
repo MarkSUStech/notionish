@@ -68,8 +68,6 @@
       document.getElementById("sb-import").addEventListener("click", () => document.getElementById("import-file").click());
       document.getElementById("import-file").addEventListener("change", (e) => App.importFile(e));
       document.getElementById("sb-theme").addEventListener("click", () => App.toggleTheme());
-      const langBtn = document.getElementById("sb-lang");
-      if (langBtn) langBtn.addEventListener("click", () => I18n.toggle());
     },
 
     openCreateMenu(anchor) {
