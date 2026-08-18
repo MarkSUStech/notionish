@@ -3,90 +3,249 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Notionish — 本地优先的 Notion 风格笔记应用</title>
-<meta name="description" content="Notionish 是一款完全本地运行、开源的 Notion 风格笔记应用。数据归你所有，离线可用。">
+<title>Notionish — 本地优先的 Notion 风格笔记应用 | Local-first Notion-style notes</title>
+<meta name="description" content="Notionish 是一款完全本地运行、开源的 Notion 风格笔记应用。数据归你所有，离线可用。Notionish is a local-first, open-source Notion-style notes app.">
+<meta property="og:title" content="Notionish — 本地优先的笔记应用">
+<meta property="og:description" content="100% 本地存储 · 离线可用 · 免费开源 | Local-first, offline, open source">
+<meta property="og:image" content="docs/screenshot.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
 <style>
-  :root{--bg:#fff;--text:#1a1a2e;--text-sub:#555;--accent:#667eea;--accent2:#764ba2;--radius:12px;--shadow:0 4px 24px rgba(0,0,0,.08)}
+  :root{
+    --bg:#f8f9ff; --bg2:#ffffff; --text:#1a1a2e; --text-sub:#5a5a7a;
+    --accent:#667eea; --accent2:#764ba2; --accent3:#f093fb;
+    --border:rgba(102,126,234,.15); --shadow:0 8px 32px rgba(102,126,234,.12);
+    --radius:16px; --nav-h:64px;
+  }
+  html[data-theme="dark"]{
+    --bg:#0f1020; --bg2:#1a1b30; --text:#e8e9f5; --text-sub:#9a9ab8;
+    --border:rgba(255,255,255,.1); --shadow:0 8px 32px rgba(0,0,0,.4);
+  }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.6}
-  .hero{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;padding:60px 24px 80px;text-align:center;position:relative;overflow:hidden}
-  .hero::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(255,255,255,.15),transparent 60%)}
-  .hero h1{font-size:clamp(32px,6vw,56px);font-weight:800;position:relative;z-index:1}
-  .hero p{font-size:clamp(16px,2.5vw,20px);opacity:.9;margin:12px 0 28px;position:relative;z-index:1}
-  .hero .btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
-  .btn{padding:12px 28px;border-radius:28px;font-size:15px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s}
-  .btn-primary{background:#fff;color:var(--accent);box-shadow:0 4px 16px rgba(0,0,0,.15)}
-  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.2)}
-  .btn-outline{border:2px solid rgba(255,255,255,.6);color:#fff}
-  .btn-outline:hover{background:rgba(255,255,255,.12)}
-  .screenshot-wrap{max-width:860px;margin:-40px auto 0;position:relative;z-index:2;padding:0 20px}
-  .screenshot-wrap img{width:100%;border-radius:var(--radius);box-shadow:0 8px 40px rgba(0,0,0,.18);border:1px solid rgba(0,0,0,.08)}
-  .section{padding:80px 24px;max-width:960px;margin:0 auto}
-  .section h2{font-size:28px;font-weight:700;text-align:center;margin-bottom:12px}
-  .section .subtitle{text-align:center;color:var(--text-sub);font-size:16px;margin-bottom:40px}
-  .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
-  .card{background:var(--bg);border:1px solid rgba(0,0,0,.08);border-radius:var(--radius);padding:24px;transition:box-shadow .2s}
-  .card:hover{box-shadow:var(--shadow)}
-  .card .ico{font-size:32px;margin-bottom:12px}
-  .card h3{font-size:17px;font-weight:700;margin-bottom:6px}
-  .card p{color:var(--text-sub);font-size:14px;line-height:1.6}
-  .download-box{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-radius:16px;padding:36px;text-align:center;margin-top:20px}
-  .download-box h3{font-size:22px;margin-bottom:8px}
-  .download-box .btn{margin-top:16px}
-  footer{text-align:center;padding:40px 24px;color:var(--text-sub);font-size:14px;border-top:1px solid rgba(0,0,0,.06)}
-  footer a{color:var(--accent);text-decoration:none}
-  @media(max-width:600px){.hero{padding:40px 16px 60px}.section{padding:48px 16px}.features{grid-template-columns:1fr}}
+  html{scroll-behavior:smooth}
+  body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:var(--text);background:var(--bg);line-height:1.65;overflow-x:hidden;transition:background .3s,color .3s}
+  .lang{display:none}
+  html[data-lang="en"] .lang-zh{display:none}
+  html[data-lang="en"] .lang-en{display:inline}
+  html[data-lang="zh"] .lang-zh{display:inline}
+  html[data-lang="zh"] .lang-en{display:none}
+
+  /* ---- Nav ---- */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 28px;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 78%,transparent);border-bottom:1px solid var(--border)}
+  .nav-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;text-decoration:none;color:var(--text)}
+  .nav-brand .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 4px 12px rgba(102,126,234,.35)}
+  .nav-links{display:flex;align-items:center;gap:24px;font-size:14.5px}
+  .nav-links a{color:var(--text-sub);text-decoration:none;transition:color .2s}
+  .nav-links a:hover{color:var(--accent)}
+  .nav-actions{display:flex;align-items:center;gap:10px}
+  .nav-btn{padding:8px 18px;border-radius:20px;font-size:13.5px;font-weight:600;text-decoration:none;cursor:pointer;border:none;transition:all .2s;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 4px 14px rgba(102,126,234,.3)}
+  .nav-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(102,126,234,.4)}
+  .icon-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:var(--bg2);color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+  .icon-btn:hover{border-color:var(--accent);color:var(--accent)}
+  @media(max-width:640px){.nav-links{display:none}}
+
+  /* ---- Hero ---- */
+  .hero{min-height:92vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 24px 60px;position:relative;overflow:hidden}
+  .hero-bg{position:absolute;inset:0;z-index:-1;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 50%,var(--accent3) 100%);opacity:.16;animation:gradientShift 12s ease infinite;background-size:300% 300%}
+  @keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:24px;background:var(--bg2);border:1px solid var(--border);font-size:13.5px;color:var(--text-sub);box-shadow:var(--shadow);margin-bottom:24px}
+  .hero-badge .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .hero h1{font-size:clamp(38px,7vw,72px);font-weight:900;line-height:1.15;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:18px}
+  .hero p{font-size:clamp(16px,2.4vw,21px);color:var(--text-sub);max-width:640px;margin:0 auto 36px}
+  .hero .btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+  .btn{padding:14px 30px;border-radius:28px;font-size:15.5px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:9px;transition:all .25s;cursor:pointer;border:none}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 8px 24px rgba(102,126,234,.35)}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(102,126,234,.5)}
+  .btn-ghost{border:1.5px solid var(--border);color:var(--text);background:var(--bg2)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-3px)}
+  .hero-stats{display:flex;gap:44px;margin-top:56px;flex-wrap:wrap;justify-content:center}
+  .hero-stat{text-align:center}
+  .hero-stat .num{font-size:30px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .hero-stat .lbl{font-size:12.5px;color:var(--text-sub);margin-top:4px;letter-spacing:.5px}
+
+  /* ---- Screenshot ---- */
+  .shot-wrap{max-width:920px;margin:-30px auto 0;padding:0 24px;position:relative;z-index:2}
+  .shot-frame{border-radius:20px;overflow:hidden;border:1px solid var(--border);box-shadow:0 24px 64px rgba(102,126,234,.22);background:var(--bg2);position:relative}
+  .shot-bar{height:38px;display:flex;align-items:center;gap:7px;padding:0 16px;background:var(--bg2);border-bottom:1px solid var(--border)}
+  .shot-bar span{width:11px;height:11px;border-radius:50%}
+  .shot-bar span:nth-child(1){background:#ff5f57}.shot-bar span:nth-child(2){background:#febc2e}.shot-bar span:nth-child(3){background:#28c840}
+  .shot-frame img{width:100%;display:block}
+
+  /* ---- Sections ---- */
+  .section{padding:96px 24px;max-width:1080px;margin:0 auto}
+  .section h2{font-size:clamp(26px,4vw,36px);font-weight:800;text-align:center;margin-bottom:14px}
+  .section .subtitle{text-align:center;color:var(--text-sub);font-size:16.5px;max-width:560px;margin:0 auto 52px}
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.visible{opacity:1;transform:none}
+
+  /* ---- Features ---- */
+  .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;transition:all .3s;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent3));opacity:0;transition:opacity .3s}
+  .card:hover{transform:translateY(-6px);box-shadow:var(--shadow)}
+  .card:hover::before{opacity:1}
+  .card .ico{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px;box-shadow:0 6px 16px rgba(102,126,234,.25)}
+  .card h3{font-size:18px;font-weight:700;margin-bottom:8px}
+  .card p{color:var(--text-sub);font-size:14.5px;line-height:1.7}
+  .card .tag{display:inline-block;margin-top:14px;font-size:11.5px;font-weight:600;color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);padding:4px 10px;border-radius:14px}
+
+  /* ---- Tech ---- */
+  .tech{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:720px;margin:0 auto}
+  .tech-item{padding:10px 20px;border-radius:24px;background:var(--bg2);border:1px solid var(--border);font-size:14px;color:var(--text-sub);transition:all .25s;cursor:default}
+  .tech-item:hover{color:var(--accent);border-color:var(--accent);transform:translateY(-2px)}
+
+  /* ---- Download ---- */
+  .download{background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:24px;padding:56px 32px;text-align:center;color:#fff;position:relative;overflow:hidden;margin-top:40px}
+  .download::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 85% 15%,rgba(255,255,255,.18),transparent 55%)}
+  .download h3{font-size:clamp(22px,3.5vw,30px);font-weight:800;margin-bottom:10px;position:relative}
+  .download p{opacity:.9;font-size:15px;margin-bottom:28px;position:relative}
+  .download .btn{background:#fff;color:var(--accent);position:relative;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+  .download .btn:hover{transform:translateY(-3px)}
+  .download .alt{font-size:13px;opacity:.85;margin-top:18px;position:relative}
+  .download .alt a{color:#fff;font-weight:600}
+
+  /* ---- Footer ---- */
+  footer{text-align:center;padding:48px 24px;color:var(--text-sub);font-size:14px;border-top:1px solid var(--border);margin-top:40px}
+  footer .links{display:flex;justify-content:center;gap:26px;margin-bottom:14px}
+  footer .links a{color:var(--text-sub);text-decoration:none;transition:color .2s}
+  footer .links a:hover{color:var(--accent)}
+  footer .note{font-size:12px;opacity:.75}
+
+  @media(max-width:600px){.section{padding:64px 16px}.hero{padding:100px 16px 48px}.hero-stats{gap:26px}.download{padding:40px 20px}}
 </style>
 </head>
 <body>
 
+<!-- Nav -->
+<nav>
+  <a class="nav-brand" href="#"><span class="logo">📝</span><span>Notionish</span></a>
+  <div class="nav-links">
+    <a href="#features"><span class="lang-zh">功能</span><span class="lang-en">Features</span></a>
+    <a href="#tech"><span class="lang-zh">技术栈</span><span class="lang-en">Tech</span></a>
+    <a href="#download"><span class="lang-zh">下载</span><span class="lang-en">Download</span></a>
+    <a href="https://github.com/MarkSUStech/notionish" target="_blank">GitHub</a>
+  </div>
+  <div class="nav-actions">
+    <button class="icon-btn" onclick="toggleLang()" title="Language">中/EN</button>
+    <button class="icon-btn" onclick="toggleTheme()" title="Theme">🌙</button>
+    <a class="nav-btn" href="https://github.com/MarkSUStech/notionish/releases" target="_blank"><span class="lang-zh">下载</span><span class="lang-en">Download</span></a>
+  </div>
+</nav>
+
+<!-- Hero -->
 <header class="hero">
-  <h1>📝 Notionish</h1>
-  <p>本地优先、开源免费的 Notion 风格笔记应用 · 数据归你所有</p>
+  <div class="hero-bg"></div>
+  <div class="hero-badge"><span class="dot"></span><span class="lang-zh">v1.0.0 已发布 · 完全免费</span><span class="lang-en">v1.0.0 Released · Free &amp; Open Source</span></div>
+  <h1>Notionish</h1>
+  <p><span class="lang-zh">本地优先、开源免费的 Notion 风格笔记应用<br>数据归你所有，离线可用，无需登录</span>
+     <span class="lang-en">A local-first, open-source Notion-style notes app<br>Your data stays with you — offline, private, no account needed</span></p>
   <div class="btns">
-    <a href="https://github.com/MarkSUStech/notionish/releases" class="btn btn-primary">⬇ 下载 Windows 桌面版</a>
-    <a href="https://github.com/MarkSUStech/notionish" class="btn btn-outline" target="_blank">⭐ GitHub 仓库</a>
+    <a href="https://github.com/MarkSUStech/notionish/releases" class="btn btn-primary" target="_blank">⬇ <span class="lang-zh">下载 Windows 桌面版</span><span class="lang-en">Download for Windows</span></a>
+    <a href="https://github.com/MarkSUStech/notionish" class="btn btn-ghost" target="_blank">⭐ GitHub</a>
+    <a href="https://marksustech.github.io/notionish/" class="btn btn-ghost" target="_blank">🌐 <span class="lang-zh">在线体验</span><span class="lang-en">Try Online</span></a>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">20+</div><div class="lbl"><span class="lang-zh">块类型</span><span class="lang-en">Block types</span></div></div>
+    <div class="hero-stat"><div class="num">6</div><div class="lbl"><span class="lang-zh">数据库视图</span><span class="lang-en">DB views</span></div></div>
+    <div class="hero-stat"><div class="num">0</div><div class="lbl"><span class="lang-zh">云存储</span><span class="lang-en">Cloud storage</span></div></div>
+    <div class="hero-stat"><div class="num">MIT</div><div class="lbl"><span class="lang-zh">开源协议</span><span class="lang-en">License</span></div></div>
   </div>
 </header>
 
-<div class="screenshot-wrap">
-  <img src="docs/screenshot.png" alt="Notionish 界面截图" loading="lazy">
+<!-- Screenshot -->
+<div class="shot-wrap reveal">
+  <div class="shot-frame">
+    <div class="shot-bar"><span></span><span></span><span></span></div>
+    <img src="docs/screenshot.png" alt="Notionish screenshot" loading="lazy">
+  </div>
 </div>
 
-<section class="section">
-  <h2>✨ 为什么选 Notionish？</h2>
-  <p class="subtitle">一款真正属于你自己的笔记应用</p>
+<!-- Features -->
+<section class="section" id="features">
+  <h2 class="reveal"><span class="lang-zh">✨ 为什么选 Notionish？</span><span class="lang-en">✨ Why Notionish?</span></h2>
+  <p class="subtitle reveal"><span class="lang-zh">一款真正属于你自己的笔记应用</span><span class="lang-en">A notes app that truly belongs to you</span></p>
   <div class="features">
-    <div class="card"><div class="ico">🔒</div><h3>数据 100% 本地</h3><p>所有笔记保存在你自己的电脑上，离线可用，无需登录，没有云端存储。</p></div>
-    <div class="card"><div class="ico">🧱</div><h3>块编辑器</h3><p>20+ 种块类型，斜杠菜单、Markdown 快捷输入、拖拽排序、富文本格式。</p></div>
-    <div class="card"><div class="ico">🗄</div><h3>六视图数据库</h3><p>表格/看板/列表/画廊/日历/时间线，支持公式、关联、汇总与筛选排序。</p></div>
-    <div class="card"><div class="ico">∑</div><h3>LaTeX 公式</h3><p>行内与行间公式，KaTeX 渲染 + 离线回退，点击即编辑源码。</p></div>
-    <div class="card"><div class="ico">🤖</div><h3>AI 助手</h3><p>内置 AI 面板，支持 RAG 检索、写笔记、出题、做闪卡（需本地服务）。</p></div>
-    <div class="card"><div class="ico">📥</div><h3>网页剪藏</h3><p>浏览器扩展一键剪藏网页内容，自动整理到笔记中。</p></div>
-    <div class="card"><div class="ico">🌙</div><h3>深色模式</h3><p>浅色 / 深色双主题，Ctrl+\ 一键切换，深夜写作不伤眼。</p></div>
-    <div class="card"><div class="ico">🆓</div><h3>完全免费开源</h3><p>MIT 协议开源，零依赖，零后端，可自由修改和分发。</p></div>
+    <div class="card reveal"><div class="ico">🔒</div><h3><span class="lang-zh">数据 100% 本地</span><span class="lang-en">100% Local Data</span></h3><p><span class="lang-zh">所有笔记保存在你自己的设备上，离线可用，没有云端存储，杜绝数据泄露。</span><span class="lang-en">All notes stay on your device. Works offline. No cloud, no leaks.</span></p><span class="tag">PRIVACY</span></div>
+    <div class="card reveal"><div class="ico">🧱</div><h3><span class="lang-zh">块编辑器</span><span class="lang-en">Block Editor</span></h3><p><span class="lang-zh">20+ 种块类型，斜杠菜单、Markdown 快捷输入、拖拽排序、富文本格式。</span><span class="lang-en">20+ block types, slash menu, Markdown shortcuts, drag &amp; drop, rich text.</span></p><span class="tag">EDITOR</span></div>
+    <div class="card reveal"><div class="ico">🗄</div><h3><span class="lang-zh">六视图数据库</span><span class="lang-en">6-View Database</span></h3><p><span class="lang-zh">表格/看板/列表/画廊/日历/时间线，支持公式、关联、汇总与筛选排序。</span><span class="lang-en">Table/Board/List/Gallery/Calendar/Timeline with formulas, relations &amp; rollups.</span></p><span class="tag">DATABASE</span></div>
+    <div class="card reveal"><div class="ico">∑</div><h3><span class="lang-zh">LaTeX 公式</span><span class="lang-en">LaTeX Math</span></h3><p><span class="lang-zh">行内与行间公式，KaTeX 渲染 + 离线回退，点击即编辑源码。</span><span class="lang-en">Inline &amp; display math, KaTeX rendering with offline fallback.</span></p><span class="tag">MATH</span></div>
+    <div class="card reveal"><div class="ico">🤖</div><h3><span class="lang-zh">AI 助手</span><span class="lang-en">AI Assistant</span></h3><p><span class="lang-zh">内置 AI 面板，支持 RAG 检索、写笔记、出题、做闪卡。</span><span class="lang-en">Built-in AI with RAG search, note writing, quizzes &amp; flashcards.</span></p><span class="tag">AI</span></div>
+    <div class="card reveal"><div class="ico">📥</div><h3><span class="lang-zh">网页剪藏</span><span class="lang-en">Web Clipper</span></h3><p><span class="lang-zh">浏览器扩展一键剪藏网页内容，自动整理到笔记中。</span><span class="lang-en">One-click web clipping extension, auto-organized into notes.</span></p><span class="tag">EXTENSION</span></div>
+    <div class="card reveal"><div class="ico">⌨</div><h3><span class="lang-zh">代码 IDE</span><span class="lang-en">Code IDE</span></h3><p><span class="lang-zh">VS Code 风格布局，Python/C/C++/Java 语法高亮与编译运行。</span><span class="lang-en">VS Code-style layout with syntax highlighting &amp; compile/run for Python/C/C++/Java.</span></p><span class="tag">IDE</span></div>
+    <div class="card reveal"><div class="ico">🌙</div><h3><span class="lang-zh">深色模式</span><span class="lang-en">Dark Mode</span></h3><p><span class="lang-zh">浅色 / 深色双主题，一键切换，深夜写作不伤眼。</span><span class="lang-en">Light &amp; dark themes, toggle anytime. Easy on the eyes at night.</span></p><span class="tag">THEME</span></div>
+    <div class="card reveal"><div class="ico">🆓</div><h3><span class="lang-zh">完全免费开源</span><span class="lang-en">Free &amp; Open Source</span></h3><p><span class="lang-zh">MIT 协议，零依赖，零后端，可自由修改和分发。</span><span class="lang-en">MIT licensed, zero dependencies, zero backend. Fork it freely.</span></p><span class="tag">MIT</span></div>
   </div>
 </section>
 
-<section class="section">
-  <h2>📥 立即下载</h2>
-  <p class="subtitle">选择适合你的方式开始使用</p>
-  <div class="download-box">
-    <h3>Windows 桌面版</h3>
-    <p>v1.0.0 · 115MB · 解压即用，双击 <code>Notionish.exe</code> 即可运行</p>
-    <a href="https://github.com/MarkSUStech/notionish/releases" class="btn btn-primary" style="background:#fff;color:var(--accent)">⬇ 前往 GitHub Releases 下载</a>
+<!-- Tech -->
+<section class="section" id="tech">
+  <h2 class="reveal"><span class="lang-zh">🧰 技术栈</span><span class="lang-en">🧰 Tech Stack</span></h2>
+  <p class="subtitle reveal"><span class="lang-zh">极简但强大</span><span class="lang-en">Minimal yet powerful</span></p>
+  <div class="tech reveal">
+    <span class="tech-item">JavaScript</span>
+    <span class="tech-item">Node.js</span>
+    <span class="tech-item">IndexedDB</span>
+    <span class="tech-item">localStorage</span>
+    <span class="tech-item">KaTeX</span>
+    <span class="tech-item">Mermaid</span>
+    <span class="tech-item">Electron</span>
+    <span class="tech-item">Ollama</span>
+    <span class="tech-item">OpenAI API</span>
+    <span class="tech-item">0 npm deps</span>
   </div>
-  <div style="margin-top:20px;text-align:center;color:var(--text-sub);font-size:14px">
-    也可以直接打开 <a href="https://marksustech.github.io/notionish/" style="color:var(--accent)">在线体验版</a>（浏览器端，数据存本地）<br>
-    或克隆仓库 <code>git clone https://github.com/MarkSUStech/notionish.git</code>
+</section>
+
+<!-- Download -->
+<section class="section" id="download">
+  <h2 class="reveal"><span class="lang-zh">📥 立即下载</span><span class="lang-en">📥 Download</span></h2>
+  <p class="subtitle reveal"><span class="lang-zh">选择适合你的方式开始使用</span><span class="lang-en">Pick the way that works for you</span></p>
+  <div class="download reveal">
+    <h3>🖥 Notionish Desktop</h3>
+    <p>v1.0.0 · Windows · 115MB · <span class="lang-zh">解压即用，双击运行</span><span class="lang-en">Portable, unzip &amp; run</span></p>
+    <a href="https://github.com/MarkSUStech/notionish/releases" class="btn" target="_blank">⬇ <span class="lang-zh">前往 GitHub Releases 下载</span><span class="lang-en">Get it from GitHub Releases</span></a>
+    <div class="alt"><span class="lang-zh">或</span><span class="lang-en">Or</span> · <a href="https://marksustech.github.io/notionish/" target="_blank"><span class="lang-zh">在线体验版</span><span class="lang-en">Try the online version</span></a> · <a href="https://github.com/MarkSUStech/notionish" target="_blank"><span class="lang-zh">克隆仓库</span><span class="lang-en">Clone the repo</span></a></div>
   </div>
 </section>
 
 <footer>
-  <p>© 2025 Notionish · <a href="https://github.com/MarkSUStech/notionish" target="_blank">GitHub</a> · <a href="https://github.com/MarkSUStech/notionish/blob/main/LICENSE" target="_blank">MIT License</a></p>
-  <p style="font-size:12px;margin-top:6px">Notion 是 Notion Labs, Inc. 的商标，本项目为独立创作，与 Notion 无任何关联。</p>
+  <div class="links">
+    <a href="https://github.com/MarkSUStech/notionish" target="_blank">GitHub</a>
+    <a href="https://github.com/MarkSUStech/notionish/releases" target="_blank">Releases</a>
+    <a href="https://github.com/MarkSUStech/notionish/blob/main/LICENSE" target="_blank">MIT License</a>
+    <a href="https://github.com/MarkSUStech/notionish/blob/main/README.md" target="_blank"><span class="lang-zh">文档</span><span class="lang-en">Docs</span></a>
+  </div>
+  <p>© 2025 Notionish</p>
+  <p class="note"><span class="lang-zh">Notion 是 Notion Labs, Inc. 的商标，本项目为独立创作，与 Notion 无任何关联。</span><span class="lang-en">Notion is a trademark of Notion Labs, Inc. This project is independent and unaffiliated.</span></p>
 </footer>
 
+<script>
+  // 语言切换
+  function toggleLang(){
+    const cur = document.documentElement.getAttribute("data-lang") || "zh";
+    document.documentElement.setAttribute("data-lang", cur === "zh" ? "en" : "zh");
+    document.documentElement.lang = cur === "zh" ? "en" : "zh-CN";
+    try{ localStorage.setItem("notionish_lang", cur === "zh" ? "en" : "zh"); }catch(e){}
+  }
+  // 主题切换
+  function toggleTheme(){
+    const cur = document.documentElement.getAttribute("data-theme") || "light";
+    document.documentElement.setAttribute("data-theme", cur === "light" ? "dark" : "light");
+    try{ localStorage.setItem("notionish_theme", cur === "light" ? "dark" : "light"); }catch(e){}
+  }
+  // 初始化
+  (function(){
+    try{
+      const lang = localStorage.getItem("notionish_lang"); if(lang) document.documentElement.setAttribute("data-lang", lang);
+      const theme = localStorage.getItem("notionish_theme");
+      if(theme){ document.documentElement.setAttribute("data-theme", theme); }
+      else if(window.matchMedia && matchMedia("(prefers-color-scheme:dark)").matches){ document.documentElement.setAttribute("data-theme","dark"); }
+    }catch(e){}
+    // 滚动显现
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => { if(en.isIntersecting){ en.target.classList.add("visible"); io.unobserve(en.target); } });
+    }, { threshold:.12 });
+    document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+  })();
+</script>
 </body>
 </html>
