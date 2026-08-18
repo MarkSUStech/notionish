@@ -7,6 +7,7 @@
 [![零依赖](https://img.shields.io/badge/零依赖-Yes-brightgreen.svg)](#)
 [![English](https://img.shields.io/badge/English-README-blue.svg)](README.en.md)
 [![在线体验](https://img.shields.io/badge/在线体验-GitHub_Pages-blueviolet.svg)](https://marksustech.github.io/notionish/)
+[![项目官网](https://img.shields.io/badge/项目官网-landing.html-ff69b4.svg)](https://marksustech.github.io/notionish/landing.html)
 
 一个 **100% 运行在浏览器本地** 的 Notion 风格笔记应用，零前端依赖、无需安装，数据保存在浏览器本地（IndexedDB，支持大文件；localStorage 作为镜像）。可选的内置零依赖 Node 服务提供 AI 接入、代码编译运行与 MCP 桥接能力。
 
