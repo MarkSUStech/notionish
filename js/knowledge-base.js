@@ -208,13 +208,13 @@
     },
 
     async createKb() {
-      const name = await U.promptModal({ title: "新建知识库", placeholder: "知识库名称", value: "" });
+      const name = await U.promptModal({ title: U.t("新建知识库"), placeholder: U.t("知识库名称"), value: "" });
       if (!name || !name.trim()) return;
       try {
         const j = await request("/api/kb/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: name.trim() }) });
         location.hash = "kb/" + j.kb.id;
-        U.toast("已创建知识库");
-      } catch (e) { U.toast("创建失败：" + e.message); }
+        U.toast(U.t("已创建知识库"));
+      } catch (e) { U.toast(U.t("创建失败：") + e.message); }
     },
 
     async removeKb(kbId) {
@@ -267,7 +267,7 @@
     },
 
     async addUrl(kbId) {
-      const url = await U.promptModal({ title: "添加网址", placeholder: "https://example.com/...", value: "https://" });
+      const url = await U.promptModal({ title: U.t("添加网址"), placeholder: "https://example.com/...", value: "https://" });
       if (!url || !url.trim()) return;
       try {
         await request("/api/kb/" + encodeURIComponent(kbId) + "/docs", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: url.trim(), kind: "url", url: url.trim() }) });

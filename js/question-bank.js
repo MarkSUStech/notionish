@@ -136,16 +136,16 @@
       content.appendChild(scroll);
 
       const head = U.el("div", "qbank-head");
-      head.appendChild(U.el("div", "qbank-title", "题库图谱"));
+      head.appendChild(U.el("div", "qbank-title", U.t("题库图谱")));
       const status = U.el("div", "qbank-status", "");
       head.appendChild(status);
-      const layoutBtn = U.el("button", "db-btn", U.icon("layout-grid", { size: 16 }) + " 重新布局");
+      const layoutBtn = U.el("button", "db-btn", U.icon("layout-grid", { size: 16 }) + " " + U.t("重新布局"));
       layoutBtn.addEventListener("click", () => { this.resetNodes(this._questions); this.runLoop(300); });
       head.appendChild(layoutBtn);
-      const refresh = U.el("button", "db-btn", U.icon("refresh-cw", { size: 16 }) + " 重算关联");
+      const refresh = U.el("button", "db-btn", U.icon("refresh-cw", { size: 16 }) + " " + U.t("重算关联"));
       refresh.addEventListener("click", () => this.computeGraph());
       head.appendChild(refresh);
-      const hint = U.el("div", "qbank-hint", "拖拽节点移动 · 滚轮缩放 · 拖拽空白平移");
+      const hint = U.el("div", "qbank-hint", U.t("拖拽节点移动 · 滚轮缩放 · 拖拽空白平移"));
       head.appendChild(hint);
       scroll.appendChild(head);
 
@@ -160,8 +160,8 @@
       const questions = Store.getQuestions();
       this._questions = questions;
       if (!questions.length) {
-        graphWrap.appendChild(U.el("div", "qbank-empty", "暂无题目。在页面里用 AI「生成题目」，或插入「题目」块后，这里会显示题目知识图谱。"));
-        status.textContent = "0 道题目";
+        graphWrap.appendChild(U.el("div", "qbank-empty", U.t("暂无题目。在页面里用 AI「生成题目」，或插入「题目」块后，这里会显示题目知识图谱。")));
+        status.textContent = U.t("0 道题目");
         return;
       }
 
@@ -300,7 +300,7 @@
     async computeGraph() {
       const questions = this._questions;
       const texts = questions.map(q => (q.prompt || "").trim());
-      this._status.textContent = "计算关联中…";
+      this._status.textContent = U.t("计算关联中…");
       let edges = [];
       try {
         const res = await fetch("/api/questions/embed", {
@@ -312,9 +312,9 @@
         if (!res.ok || !data.ok) throw new Error(data.error || ("HTTP " + res.status));
         if (!Array.isArray(data.vectors)) throw new Error("无向量");
         edges = buildEdges(data.vectors, 0.5);
-        this._status.textContent = edges.length + " 条关联";
+        this._status.textContent = edges.length + " " + U.t("条关联");
       } catch (e) {
-        this._status.textContent = "关联不可用：" + (e && e.message ? e.message : String(e));
+        this._status.textContent = U.t("关联不可用：") + (e && e.message ? e.message : String(e));
       }
       this._edges = edges;
       this.runLoop(300);
@@ -386,7 +386,7 @@
     },
 
     showQuestion(q) {
-      const TYPE = { single: "单选", multiple: "多选", judge: "判断", fill: "填空", short_answer: "简答" };
+      const TYPE = { single: U.t("单选"), multiple: U.t("多选"), judge: U.t("判断"), fill: U.t("填空"), short_answer: U.t("简答") };
       const modal = U.modal({ title: TYPE[q.type] || q.type, size: "sm" });
       modal.el.classList.add("qbank-detail");
       const body = modal.body;
@@ -397,25 +397,25 @@
 
       const opts = U.el("div", "qbank-options");
       if (q.type === "judge") {
-        opts.appendChild(U.el("span", "qbank-opt" + (q.answer === true ? " correct" : ""), "对"));
-        opts.appendChild(U.el("span", "qbank-opt" + (q.answer === false ? " correct" : ""), "错"));
+        opts.appendChild(U.el("span", "qbank-opt" + (q.answer === true ? " correct" : ""), U.t("对")));
+        opts.appendChild(U.el("span", "qbank-opt" + (q.answer === false ? " correct" : ""), U.t("错")));
       } else if (q.type === "single" || q.type === "multiple") {
         const ans = Array.isArray(q.answer) ? q.answer : (q.answer == null ? [] : [q.answer]);
         (q.options || []).forEach((opt, i) => opts.appendChild(U.el("span", "qbank-opt" + (ans.includes(i) ? " correct" : ""), Blocks.qTextHTML(opt))));
       } else if (q.type === "fill") {
         const a = Array.isArray(q.answer) ? q.answer.join(" / ") : (q.answer == null ? "" : q.answer);
-        opts.appendChild(U.el("span", "qbank-opt qbank-answer", "参考答案：" + Blocks.qTextHTML(a)));
+        opts.appendChild(U.el("span", "qbank-opt qbank-answer", U.t("参考答案：") + Blocks.qTextHTML(a)));
       } else {
-        opts.appendChild(U.el("span", "qbank-opt qbank-answer", "参考答案：" + Blocks.qTextHTML(q.answer == null ? "" : q.answer)));
+        opts.appendChild(U.el("span", "qbank-opt qbank-answer", U.t("参考答案：") + Blocks.qTextHTML(q.answer == null ? "" : q.answer)));
       }
       body.appendChild(opts);
 
-      if (q.explanation) body.appendChild(U.el("div", "qbank-explanation", "解析：" + U.esc(q.explanation)));
+      if (q.explanation) body.appendChild(U.el("div", "qbank-explanation", U.t("解析：") + U.esc(q.explanation)));
 
-      const reveal = U.el("button", "db-btn primary", "显示答案");
+      const reveal = U.el("button", "db-btn primary", U.t("显示答案"));
       reveal.addEventListener("click", () => {
         const showing = modal.el.classList.toggle("revealed");
-        reveal.textContent = showing ? "隐藏答案" : "显示答案";
+        reveal.textContent = showing ? U.t("隐藏答案") : U.t("显示答案");
       });
       modal.foot.appendChild(reveal);
     },
