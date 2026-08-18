@@ -454,6 +454,7 @@
 
     // ── 语言设置 ──
     "语言 / Language": "Language",
+    "语言": "Language",
     "切换界面语言，立即生效。": "Switch UI language. Takes effect immediately.",
     "中文": "中文",
     "English": "English",

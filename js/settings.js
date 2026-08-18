@@ -11,7 +11,6 @@
       content.appendChild(scroll);
 
       scroll.appendChild(U.el("div", "settings-title", U.t("设置")));
-      this.renderLanguage(scroll);
       this.renderMemory(scroll);
       this.renderTheme(scroll);
       this.renderLayout(scroll);
@@ -19,19 +18,6 @@
       this.renderData(scroll);
     },
 
-    renderLanguage(scroll) {
-      const sec = this.section("语言 / Language", "切换界面语言，立即生效。");
-      const row = U.el("div", "settings-row");
-      const cur = (global.I18n && I18n.lang) || "zh";
-      ["zh", "en"].forEach(lang => {
-        const label = lang === "zh" ? "中文" : "English";
-        const btn = U.el("button", "db-btn" + (cur === lang ? " primary" : ""), label);
-        btn.addEventListener("click", () => { if (global.I18n && I18n.lang !== lang) I18n.setLang(lang), location.reload(); });
-        row.appendChild(btn);
-      });
-      sec.appendChild(row);
-      scroll.appendChild(sec);
-    },
 
     section(title, desc) {
       const wrap = U.el("div", "settings-section");
@@ -148,6 +134,18 @@
         sizeRow.appendChild(btn);
       });
       sec.appendChild(sizeRow);
+
+      // 语言切换（与字体/字号同风格）
+      sec.appendChild(U.el("div", "q-form-label", U.t("语言")));
+      const langRow = U.el("div", "settings-row");
+      const curLang = (global.I18n && I18n.lang) || "zh";
+      ["zh", "en"].forEach(lang => {
+        const label = lang === "zh" ? U.t("中文") : U.t("English");
+        const btn = U.el("button", "db-btn" + (curLang === lang ? " primary" : ""), label);
+        btn.addEventListener("click", () => { if (global.I18n && I18n.lang !== lang) { I18n.setLang(lang); location.reload(); } });
+        langRow.appendChild(btn);
+      });
+      sec.appendChild(langRow);
 
       scroll.appendChild(sec);
     },
