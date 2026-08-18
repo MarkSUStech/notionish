@@ -860,8 +860,8 @@
         const q = search.value.toLowerCase();
         filtered = [];
         B.SLASH_ITEMS.forEach(grp => {
-          const hits = grp.items.filter(it => !q || (it.label + it.desc).toLowerCase().includes(q));
-          if (hits.length) filtered.push({ group: grp.group, items: hits });
+          const hits = grp.items.filter(it => !q || ((U.t(it.label) + U.t(it.desc))).toLowerCase().includes(q));
+          if (hits.length) filtered.push({ group: U.t(grp.group), items: hits });
         });
         U.clear(scroll);
         let idx = 0;
@@ -873,8 +873,8 @@
             const item = U.el("div", "menu-item");
             item.dataset.idx = it._idx;
             const ico = U.el("span", "mi-ico", it.icon);
-            const lab = U.el("span", "mi-label", it.label);
-            const desc = U.el("span", "mi-desc", it.desc);
+            const lab = U.el("span", "mi-label", U.t(it.label));
+            const desc = U.el("span", "mi-desc", U.t(it.desc));
             item.appendChild(ico); item.appendChild(lab); item.appendChild(desc);
             item.addEventListener("click", () => select(it));
             scroll.appendChild(item);

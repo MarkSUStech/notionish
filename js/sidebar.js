@@ -68,6 +68,8 @@
       document.getElementById("sb-import").addEventListener("click", () => document.getElementById("import-file").click());
       document.getElementById("import-file").addEventListener("change", (e) => App.importFile(e));
       document.getElementById("sb-theme").addEventListener("click", () => App.toggleTheme());
+      const langBtn = document.getElementById("sb-lang");
+      if (langBtn) langBtn.addEventListener("click", () => I18n.toggle());
     },
 
     openCreateMenu(anchor) {
@@ -78,11 +80,11 @@
         item.addEventListener("click", () => { pop.remove(); fn(); });
         pop.appendChild(item);
       };
-      mk("新建页面", "📄", () => App.newPage());
-      mk("新建数据库", "🗄", () => App.newDatabase());
-      mk("新建代码文件", "⌨", () => App.newCodeFile());
-      mk("新建网页", "🌐", () => App.newWebPage());
-      mk("新建 PDF", "📕", () => App.newPDFPage());
+      mk(U.t("新建页面"), "📄", () => App.newPage());
+      mk(U.t("新建数据库"), "🗄", () => App.newDatabase());
+      mk(U.t("新建代码文件"), "⌨", () => App.newCodeFile());
+      mk(U.t("新建网页"), "🌐", () => App.newWebPage());
+      mk(U.t("新建 PDF"), "📕", () => App.newPDFPage());
       document.body.appendChild(pop);
       const r = anchor.getBoundingClientRect();
       pop.style.left = Math.min(r.left, window.innerWidth - 220) + "px";
@@ -284,12 +286,12 @@
       if (action === "restore") {
         S.setPageDeleted(pageId, false);
         this.render();
-        U.toast("已恢复");
+        U.toast(U.t("已恢复"));
         return;
       }
       if (action === "purge") {
         const p = S.getPage(pageId);
-        const ok = await U.confirmModal({ title: "彻底删除", message: "彻底删除「" + (p ? (U.segsText(p.title) || "未命名") : "此页面") + "」？此操作不可撤销。", okText: "彻底删除", danger: true });
+        const ok = await U.confirmModal({ title: U.t("彻底删除"), message: U.t("彻底删除") + "「" + (p ? (U.segsText(p.title) || U.t("未命名")) : U.t("此页面")) + "」？" + U.t("此操作不可撤销。"), okText: U.t("彻底删除"), danger: true });
         if (ok) {
           S.deletePage(pageId, true);
           this.render();

@@ -406,5 +406,7 @@
     ],
   };
 
+  // 若已加载 i18n，挂载翻译函数（中文即 key）
+  U.t = (global.I18n && I18n.t) ? function (s) { return I18n.t(s); } : (function (s) { return s; });
   global.U = U;
 })(window);

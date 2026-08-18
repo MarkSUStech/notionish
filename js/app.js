@@ -9,7 +9,9 @@
     _renderTarget: null,   // 分屏时当前渲染容器（活动窗格的 body）
 
     async boot() {
+      if (global.I18n) I18n.init();
       await S.boot();
+      if (global.I18n) I18n.applyToDom(document);
       // 一次性清理：移除误加到"待整理"页面里的 blocks，恢复被误删的子页面
       if (!S.state._migratedInboxV2) {
         const inbox = Object.values(S.state.pages).find(p => p.parentId === "root" && !p.deleted && U.segsText(p.title) === "待整理");
@@ -580,8 +582,8 @@
         it.addEventListener("click", () => { pop.remove(); fn(); });
         scroll.appendChild(it);
       };
-      addItem(U.icon("pencil", { size: 16 }), "重命名", async () => {
-        const name = await U.promptModal({ title: "重命名页面", value: U.segsText(page.title) || "", placeholder: "页面名称" });
+      addItem(U.icon("pencil", { size: 16 }), U.t("重命名"), async () => {
+        const name = await U.promptModal({ title: U.t("重命名页面"), value: U.segsText(page.title) || "", placeholder: U.t("页面名称") });
         if (name != null && name.trim()) {
           page.title = [{ t: name.trim() }];
           S.markDirty();
@@ -589,57 +591,57 @@
           this.route();
         }
       });
-      addItem(U.icon("star", { size: 16 }), page.favorite ? "取消收藏" : "设为收藏", () => {
+      addItem(U.icon("star", { size: 16 }), page.favorite ? U.t("取消收藏") : U.t("设为收藏"), () => {
         page.favorite = !page.favorite;
         S.markDirty();
         Sidebar.refresh();
         this.renderTopbar(page);
       });
-      addItem(U.icon("copy", { size: 16 }), "复制页面", () => {
+      addItem(U.icon("copy", { size: 16 }), U.t("复制页面"), () => {
         const copy = S.duplicatePage(page.id);
-        if (copy) { this.openPage(copy.id); U.toast("已复制页面"); }
+        if (copy) { this.openPage(copy.id); U.toast(U.t("已复制页面")); }
       });
-      addItem(U.icon("folder-open", { size: 16 }), "移至…", () => {
+      addItem(U.icon("folder-open", { size: 16 }), U.t("移至…"), () => {
         Editor.openPagePicker((target) => {
           S.movePage(page.id, target.id, null);
           Sidebar.refresh();
           this.route();
         });
       });
-      addItem(U.icon("upload", { size: 16 }), "导出为 JSON", () => {
-        U.download((U.segsText(page.title) || "页面") + ".json", JSON.stringify(page, null, 2), "application/json");
-        U.toast("已导出");
+      addItem(U.icon("upload", { size: 16 }), U.t("导出为 JSON"), () => {
+        U.download((U.segsText(page.title) || U.t("页面")) + ".json", JSON.stringify(page, null, 2), "application/json");
+        U.toast(U.t("已导出"));
       });
-      addItem(U.icon("file-text", { size: 16 }), "导出为 Markdown", () => {
-        U.download((U.segsText(page.title) || "页面") + ".md", S.pageToMarkdown(page), "text/markdown;charset=utf-8");
-        U.toast("已导出 Markdown");
+      addItem(U.icon("file-text", { size: 16 }), U.t("导出为 Markdown"), () => {
+        U.download((U.segsText(page.title) || U.t("页面")) + ".md", S.pageToMarkdown(page), "text/markdown;charset=utf-8");
+        U.toast(U.t("已导出 Markdown"));
       });
-      addItem(U.icon("globe", { size: 16 }), "导出为 HTML", () => {
-        U.download((U.segsText(page.title) || "页面") + ".html", this.pageToHTML(page), "text/html;charset=utf-8");
-        U.toast("已导出 HTML");
+      addItem(U.icon("globe", { size: 16 }), U.t("导出为 HTML"), () => {
+        U.download((U.segsText(page.title) || U.t("页面")) + ".html", this.pageToHTML(page), "text/html;charset=utf-8");
+        U.toast(U.t("已导出 HTML"));
       });
-      addItem(U.icon("printer", { size: 16 }), "打印 / 导出 PDF", () => {
+      addItem(U.icon("printer", { size: 16 }), U.t("打印 / 导出 PDF"), () => {
         if (S.currentPageId === page.id) this.printPage(page);
         else { this.openPage(page.id); setTimeout(() => this.printPage(page), 400); }
       });
       if (page.web && page.url) {
-        addItem(U.icon("file-text", { size: 16 }), "保存为笔记（抓取正文）", () => this.clipFromUrl(page.url));
-        addItem(U.icon("file-text", { size: 16 }), "转换为 PDF（网页内容）", () => this.convertWebPageToPdf(page));
+        addItem(U.icon("file-text", { size: 16 }), U.t("保存为笔记（抓取正文）"), () => this.clipFromUrl(page.url));
+        addItem(U.icon("file-text", { size: 16 }), U.t("转换为 PDF（网页内容）"), () => this.convertWebPageToPdf(page));
       }
-      addItem(U.icon("clock", { size: 16 }), "设置提醒", () => this.openAddReminder(page));
-      addItem(U.icon("history", { size: 16 }), "版本历史", () => this.openVersionHistory(page));
-      addItem(U.icon("save", { size: 16 }), "保存为模板", () => {
-        S.addTemplate({ name: U.segsText(page.title) || "未命名模板", data: { title: U.clone(page.title), icon: page.icon, children: U.clone(page.children) } });
-        U.toast("已保存为模板");
+      addItem(U.icon("clock", { size: 16 }), U.t("设置提醒"), () => this.openAddReminder(page));
+      addItem(U.icon("history", { size: 16 }), U.t("版本历史"), () => this.openVersionHistory(page));
+      addItem(U.icon("save", { size: 16 }), U.t("保存为模板"), () => {
+        S.addTemplate({ name: U.segsText(page.title) || U.t("未命名模板"), data: { title: U.clone(page.title), icon: page.icon, children: U.clone(page.children) } });
+        U.toast(U.t("已保存为模板"));
       });
-      addItem(U.icon("trash-2", { size: 16 }), "删除页面", async () => {
-        const ok = await U.confirmModal({ title: "删除页面", message: "将「" + (U.segsText(page.title) || "未命名") + "」移到回收站？", okText: "移到回收站", danger: true });
+      addItem(U.icon("trash-2", { size: 16 }), U.t("删除页面"), async () => {
+        const ok = await U.confirmModal({ title: U.t("删除页面"), message: U.t("将") + "「" + (U.segsText(page.title) || U.t("未命名")) + "」" + U.t("移到回收站？"), okText: U.t("移到回收站"), danger: true });
         if (ok) {
           S.deletePage(page.id, false);
           Sidebar.refresh();
           if (this.currentId() === page.id) this.goHome();
           else this.route();
-          U.toast("已移入回收站");
+          U.toast(U.t("已移入回收站"));
         }
       }, true);
 
