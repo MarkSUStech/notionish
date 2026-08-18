@@ -34,7 +34,7 @@ const check = (name, cond) => results.push({ name, pass: !!cond });
 (async () => {
   await Store.boot();
   const pages = Store.state.pages;
-  check("boot seeds 11 pages (5 + 6 rows)", Object.keys(pages).length === 11);
+  check("boot seeds 12 pages (6 + 6 rows)", Object.keys(pages).length === 12);
 const welcome = Store.getRootPages().find(p => p.children.length > 0);
 check("welcome page has blocks", welcome && welcome.children.length >= 5);
 const tasks = Store.getRootPages().find(p => p.database);

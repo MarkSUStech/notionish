@@ -519,28 +519,38 @@
       const blk = (type, text, extra) => Object.assign(newBlock(type, text), extra || {});
 
       // ── 1. 欢迎页 ──
-      const welcome = newPage("root", { title: "欢迎使用 Notionish", icon: "👋" });
+      const welcome = newPage("root", { title: "欢迎使用 Notionish", icon: "👋", cover: "linear-gradient(135deg,#667eea 0%,#764ba2 100%)" });
       welcome.order = 0;
+      const wT1 = blk("toggle", "⌨️ 输入方式");
+      wT1.children = [
+        blk("bullet", "输入 / 呼出块菜单，插入标题、列表、待办、代码、表格、公式等 20+ 种块"),
+        blk("bullet", "输入 # - 1. [] > 后按空格，快速 Markdown 转换"),
+        blk("bullet", "选中文字弹出格式工具栏：加粗、斜体、下划线、颜色、链接"),
+      ];
+      const wT2 = blk("toggle", "🖱 操作技巧");
+      wT2.children = [
+        blk("bullet", "悬停块左侧 ⋮⋮ 手柄 → 拖拽排序、嵌套、多选批量删除"),
+        blk("bullet", "右键块 → 转换为其他类型、复制、移至其他页面"),
+        blk("bullet", "Ctrl+K 全文搜索 · Ctrl+N 新建页面 · Ctrl+\\ 切换主题"),
+      ];
       welcome.children = [
         blk("heading1", "欢迎来到 Notionish 🎉"),
-        blk("paragraph", "这是一款完全在浏览器本地运行、零后端的 Notion 风格笔记应用，数据保存在 localStorage 中，刷新不丢失。"),
-        blk("callout", "提示：所有块都能拖拽排序、嵌套、收藏；鼠标悬停块左侧会出现 ⋮⋮ 手柄。", { attrs: { icon: "💡" } }),
+        blk("paragraph", "一款完全在浏览器本地运行的 Notion 风格笔记应用。数据保存在你自己的设备上，离线可用、随取随写。"),
+        blk("callout", "想快速上手？展开下面的小抄，或者用右上角的 AI 助手直接说「帮我写一篇笔记」。", { attrs: { icon: "🚀" } }),
         blk("heading2", "✨ 快速上手"),
-        blk("bullet", "在任意位置输入 / 呼出块菜单，插入标题、列表、待办、代码、表格、公式等块"),
-        blk("bullet", "输入 # 、- 、1. 、[] 、> 后按空格，快速 Markdown 转换"),
-        blk("bullet", "选中文字弹出格式工具栏：加粗、斜体、颜色、链接"),
-        blk("bullet", "Ctrl+K 全文搜索 · Ctrl+N 新建页面 · Ctrl+\\ 切换主题"),
+        wT1,
+        wT2,
+        blk("divider"),
         blk("heading2", "∑ 数学公式"),
-        blk("paragraph", "行内公式：在一对美元符号之间写 LaTeX，例如质能方程 $E = mc^2$ 与欧拉公式 $e^{i\\pi} + 1 = 0$。"),
+        blk("paragraph", "行内公式：质能方程 $E = mc^2$，欧拉公式 $e^{i\\pi} + 1 = 0$。"),
         blk("equation", "$$\\int_{-\\infty}^{\\infty} e^{-x^2} \\, dx = \\sqrt{\\pi}$$"),
         blk("heading2", "🗄 数据库"),
-        blk("paragraph", "左侧的「项目任务看板」是一个数据库，支持 表格 / 看板 / 列表 / 画廊 / 日历 / 时间线 六种视图，并可添加筛选与排序。"),
-        blk("heading2", "📚 推荐阅读"),
-        blk("paragraph", "看看「产品例会纪要」了解各类块的用法，再看「公式速查」掌握 LaTeX 写法。"),
+        blk("paragraph", "左侧的「项目任务看板」是一个数据库，支持表格 / 看板 / 列表 / 画廊 / 日历 / 时间线六种视图，并可添加筛选与排序。"),
+        blk("quote", "先写起来，再慢慢变好。"),
       ];
 
       // ── 2. 项目任务看板（数据库） ──
-      const tasks = newPage("root", { title: "项目任务看板", icon: "🗄", database: true });
+      const tasks = newPage("root", { title: "项目任务看板", icon: "🗄", database: true, cover: "linear-gradient(135deg,#f093fb 0%,#f5576c 100%)" });
       tasks.order = 1;
       tasks.schema = { props: [
         defaultProp("名称", "text"),
@@ -578,7 +588,7 @@
       });
 
       // ── 3. 产品例会纪要 ──
-      const notes = newPage("root", { title: "产品例会纪要", icon: "📝" });
+      const notes = newPage("root", { title: "产品例会纪要", icon: "📝", cover: "linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)" });
       notes.order = 2;
       const toggle = blk("toggle", "一、上周进展");
       toggle.children = [
@@ -605,7 +615,7 @@
       ];
 
       // ── 4. 公式速查 ──
-      const formula = newPage("root", { title: "公式速查", icon: "🧮" });
+      const formula = newPage("root", { title: "公式速查", icon: "🧮", cover: "linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)" });
       formula.order = 3;
       formula.children = [
         blk("heading1", "LaTeX 公式速查"),
@@ -620,14 +630,42 @@
       ];
 
       // ── 5. 试卷（文件夹） ──
-      const exam = newPage("root", { title: "试卷", icon: "📋" });
+      const exam = newPage("root", { title: "试卷", icon: "📋", cover: "linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%)" });
       exam.order = 4;
       exam.children = [
         blk("paragraph", "这里存放 AI 生成的试卷。使用 AI 助手的「出试卷」工具，AI 会从题库中 RAG 检索相关题目并自动组卷。"),
       ];
 
+      // ── 6. 灵感收藏 ──
+      const ideas = newPage("root", { title: "灵感收藏", icon: "💡", cover: "linear-gradient(135deg,#fa709a 0%,#fee140 100%)" });
+      ideas.order = 5;
+      const iT1 = blk("toggle", "📚 想读的书");
+      iT1.children = [
+        blk("todo", "《黑客与画家》", { checked: true }),
+        blk("todo", "《设计中的设计》"),
+        blk("todo", "《奇点临近》"),
+      ];
+      const iT2 = blk("toggle", "✍️ 写作灵感");
+      iT2.children = [
+        blk("bullet", "本地优先应用为什么值得做？"),
+        blk("bullet", "从零写一个编辑器学到的 10 件事"),
+        blk("bullet", "AI 辅助笔记的边界在哪里"),
+      ];
+      ideas.children = [
+        blk("heading1", "灵感收藏 💡"),
+        blk("quote", "想象力比知识更重要。—— 爱因斯坦"),
+        blk("callout", "任何想法都可以先记在这里，稍后再整理成正式笔记。", { attrs: { icon: "📌" } }),
+        blk("heading2", "想做的事"),
+        blk("todo", "每天写 10 分钟日记", { checked: true }),
+        blk("todo", "维护一个公开的技术博客"),
+        iT1,
+        iT2,
+        blk("divider"),
+        blk("callout", "灵感会过期，记下来才是你的。", { attrs: { icon: "⏳" } }),
+      ];
+
       const pages = {};
-      [welcome, tasks, notes, formula, exam].concat(rowPages).forEach(p => pages[p.id] = p);
+      [welcome, tasks, notes, formula, exam, ideas].concat(rowPages).forEach(p => pages[p.id] = p);
       return {
         pages,
         settings: { theme: "light", pageWidth: "760px", lineHeight: 1.62, fontFamily: "default", fontSize: 16 },
