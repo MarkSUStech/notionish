@@ -406,7 +406,7 @@
     buildPanel() {
       const toggle = U.el("button", "icon-btn ai-toggle", "✦");
       toggle.id = "ai-toggle";
-      toggle.title = "AI 助手 (Ctrl+Shift+A)";
+      toggle.title = U.t("AI 助手 (Ctrl+Shift+A)");
       document.getElementById("topbar").appendChild(toggle);
       toggle.addEventListener("click", () => this.toggle());
 
@@ -414,9 +414,9 @@
       panel.id = "ai-panel";
       panel.innerHTML =
         '<div class="ai-head">' +
-          '<span class="ai-title">✦ AI 助手</span>' +
-          '<button class="icon-btn ai-settings" title="设置">⚙</button>' +
-          '<button class="icon-btn ai-close" title="关闭">✕</button>' +
+          '<span class="ai-title">' + U.t("✦ AI 助手") + '</span>' +
+          '<button class="icon-btn ai-settings" title="' + U.t("设置") + '">⚙</button>' +
+          '<button class="icon-btn ai-close" title="' + U.t("关闭") + '">✕</button>' +
         '</div>' +
         '<div class="ai-messages"></div>' +
         '<div class="ai-draft" hidden></div>' +
@@ -424,12 +424,12 @@
           this._buildToolbarHTML() +
         '</div>' +
         '<div class="ai-input-row">' +
-          '<textarea class="ai-input" placeholder="输入问题，或选择上方工具…" rows="2"></textarea>' +
-          '<button class="ai-send" title="发送">➤</button>' +
+          '<textarea class="ai-input" placeholder="' + U.t("输入问题，或选择上方工具…") + '" rows="2"></textarea>' +
+          '<button class="ai-send" title="' + U.t("发送") + '">➤</button>' +
         '</div>' +
         '<div class="ai-foot">' +
-          '<span class="ai-status">连接中…</span>' +
-          '<button class="ai-rebuild" title="重建全部索引">🔄 重建索引</button>' +
+          '<span class="ai-status">' + U.t("连接中…") + '</span>' +
+          '<button class="ai-rebuild" title="' + U.t("重建全部索引") + '">🔄 ' + U.t("重建索引") + '</button>' +
         '</div>';
       document.getElementById("app").appendChild(panel);
       this.panel = panel;
@@ -438,18 +438,18 @@
     },
 
     _buildToolbarHTML() {
-      return '<div class="ai-tgl" id="ai-tgl-tools"><span class="ai-tgl-arrow">▶</span> 工具</div>' +
+      return '<div class="ai-tgl" id="ai-tgl-tools"><span class="ai-tgl-arrow">▶</span> ' + U.t("工具") + '</div>' +
         '<div class="ai-tgl-body" id="ai-tgl-tools-body" hidden>' +
-          '<label class="ai-chk"><input type="checkbox" data-tool="exam">📋 出试卷</label>' +
-          '<label class="ai-chk"><input type="checkbox" data-tool="note">📝 新增笔记</label>' +
-          '<label class="ai-chk"><input type="checkbox" data-tool="viz">📊 可视化</label>' +
-          '<label class="ai-chk"><input type="checkbox" data-tool="research">🔬 研究（搜索→知识库）</label>' +
+          '<label class="ai-chk"><input type="checkbox" data-tool="exam">📋 ' + U.t("出试卷") + '</label>' +
+          '<label class="ai-chk"><input type="checkbox" data-tool="note">📝 ' + U.t("新增笔记") + '</label>' +
+          '<label class="ai-chk"><input type="checkbox" data-tool="viz">📊 ' + U.t("可视化") + '</label>' +
+          '<label class="ai-chk"><input type="checkbox" data-tool="research">🔬 ' + U.t("研究（搜索→知识库）") + '</label>' +
         '</div>' +
-        '<div class="ai-tgl" id="ai-tgl-kb"><span class="ai-tgl-arrow">▶</span> 知识库</div>' +
+        '<div class="ai-tgl" id="ai-tgl-kb"><span class="ai-tgl-arrow">▶</span> ' + U.t("知识库") + '</div>' +
         '<div class="ai-tgl-body" id="ai-tgl-kb-body" hidden>' +
-          '<div id="ai-kb-list" class="ai-kb-list">加载中…</div>' +
+          '<div id="ai-kb-list" class="ai-kb-list">' + U.t("加载中…") + '</div>' +
         '</div>' +
-        '<div class="ai-tgl" id="ai-tgl-style"><span class="ai-tgl-arrow">▶</span> 风格</div>' +
+        '<div class="ai-tgl" id="ai-tgl-style"><span class="ai-tgl-arrow">▶</span> ' + U.t("风格") + '</div>' +
         '<div class="ai-tgl-body" id="ai-tgl-style-body" hidden>' +
           '<div class="ai-style-btns"></div>' +
         '</div>';
@@ -501,9 +501,9 @@
       // 风格按钮
       const styleBtns = panel.querySelector(".ai-style-btns");
       WRITING_STYLES.forEach(s => {
-        const b = U.el("button", "ai-style-btn", s.label);
+        const b = U.el("button", "ai-style-btn", U.t(s.label));
         b.dataset.style = s.id;
-        b.title = s.hint || "标准风格";
+        b.title = U.t(s.hint) || U.t("标准风格");
         if (s.id === this.style) b.classList.add("active");
         b.addEventListener("click", () => {
           this.style = s.id;
@@ -525,7 +525,7 @@
         const j = await res.json();
         const kbs = Array.isArray(j.kbs) ? j.kbs : [];
         U.clear(el);
-        if (!kbs.length) { el.textContent = "暂无知识库"; return; }
+        if (!kbs.length) { el.textContent = U.t("暂无知识库"); return; }
         kbs.forEach(kb => {
           const label = U.el("label", "ai-chk");
           const cb = U.el("input");
@@ -539,7 +539,7 @@
           label.appendChild(document.createTextNode(" " + (kb.name || kb.id)));
           el.appendChild(label);
         });
-      } catch (e) { el.textContent = "加载失败"; }
+      } catch (e) { el.textContent = U.t("加载失败"); }
     },
 
     toggle(force) {
@@ -1602,10 +1602,10 @@
       try {
         const res = await fetch("/api/ai/status");
         const st = await res.json();
-        el.textContent = st.configured ? ("已就绪 · 索引 " + st.indexSize + " 段") : "未配置 · 点 ⚙ 设置";
+        el.textContent = st.configured ? (U.t("已就绪 · 索引") + " " + st.indexSize + " " + U.t("段")) : U.t("未配置 · 点 ⚙ 设置");
         el.className = "ai-status" + (st.configured ? " ok" : "");
       } catch (e) {
-        el.textContent = "本地服务未启动";
+        el.textContent = U.t("本地服务未启动");
         el.className = "ai-status";
       }
     },
