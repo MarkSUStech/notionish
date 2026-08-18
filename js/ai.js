@@ -147,19 +147,35 @@
     return null;
   }
 
+  /** 语言指令：英文界面时要求 AI 用英文输出 */
+  function langHint() {
+    if (global.I18n && I18n.lang === "en") {
+      return "请用英文（English）撰写所有输出内容，包括标题、正文、题目、评语等。";
+    }
+    return "请用中文撰写所有输出内容。";
+  }
+
+  /** 给任意 prompt 追加语言指令（英文模式下） */
+  function localizePrompt(p) {
+    if (global.I18n && I18n.lang === "en") {
+      return String(p) + "\n\n[Output language: English. Please respond entirely in English.]";
+    }
+    return p;
+  }
+
   function buildQuestionsPrompt(content, count) {
-    return "请基于下面的笔记内容生成 " + (Number(count) || 3) + " 道复习自测题。只输出一个 JSON 数组，不要任何解释文字。每项字段：" +
+    return langHint() + "\n请基于下面的笔记内容生成 " + (Number(count) || 3) + " 道复习自测题。只输出一个 JSON 数组，不要任何解释文字。每项字段：" +
       "type（取值 single/multiple/judge/fill/short_answer）、prompt（题干）、options（选择题的选项数组，非选择题为 []）、" +
       "answer（单选为正确选项索引数字，多选为索引数字数组，判断为布尔值，填空/简答为字符串）、explanation（解析，可为空字符串）。\n\n笔记内容：\n" + content;
   }
 
   function buildFlashcardsPrompt(content, count) {
-    return "请基于下面的笔记内容生成 " + (Number(count) || 5) + " 张学习闪卡。只输出一个 JSON 数组，不要任何解释文字。每项字段：" +
+    return langHint() + "\n请基于下面的笔记内容生成 " + (Number(count) || 5) + " 张学习闪卡。只输出一个 JSON 数组，不要任何解释文字。每项字段：" +
       "front（正面问题）、back（背面答案）。\n\n笔记内容：\n" + content;
   }
 
   function buildNotePrompt(topic, styleHint) {
-    return "请为下面的学习主题撰写一份结构完整的中文笔记。只输出一个 JSON 对象，不要任何解释文字。" +
+    return langHint() + "\n请为下面的学习主题撰写一份结构完整的笔记。只输出一个 JSON 对象，不要任何解释文字。" +
       '格式：{"title":"页面标题","blocks":[{"type":"段落类型","text":"内容"},...]}。' +
       "type 取值：paragraph、heading2、heading3、bullet、numbered、quote、callout、equation。" +
       "公式规则：正文行内公式只用 $...$；独立行间公式必须使用 equation 块，text 为 $$...$$。不要在段落正文中使用 $$。" +
@@ -169,7 +185,7 @@
   }
 
   function buildSupplementPrompt(title, content, styleHint) {
-    return "下面是一份已有笔记，请补充更多相关知识、例子或总结，使其更完整。只输出一个 JSON 对象，不要任何解释文字。" +
+    return langHint() + "\n下面是一份已有笔记，请补充更多相关知识、例子或总结，使其更完整。只输出一个 JSON 对象，不要任何解释文字。" +
       '格式：{"blocks":[{"type":"段落类型","text":"内容"},...]}。' +
       "type 取值：paragraph、heading2、heading3、bullet、numbered、quote、callout、equation。" +
       "公式规则：正文行内公式只用 $...$；独立行间公式必须使用 equation 块，text 为 $$...$$。不要在段落正文中使用 $$。" +
@@ -568,7 +584,11 @@
       if (this._tools.viz) toolCtx += "使用 create_block 工具生成可视化图表（mermaid/html）。";
       if (this._tools.research) toolCtx += "使用 web_search 搜索资料，然后用 save_web_to_kb 保存到知识库。";
       const fullQuery = toolCtx ? toolCtx + " 用户问题：" + query : query;
-      await this.runChat([{ role: "user", content: fullQuery }]);
+      const msgs = [{ role: "user", content: fullQuery }];
+      if (global.I18n && I18n.lang === "en") {
+        msgs.unshift({ role: "system", content: "You are the Notionish AI assistant. Always respond in English, unless the user explicitly asks for another language." });
+      }
+      await this.runChat(msgs);
       this._updateSendBtn();
     },
 
@@ -1090,7 +1110,7 @@
         "题目" + (i + 1) + "：" + (item.prompt || "") + "\n参考答案：" + (item.answer || "") + "\n学生答案：" + (item.userAns || "（未作答）")
       ).join("\n\n");
       const messages = [
-        { role: "system", content: "你是一位严格的阅卷老师。请逐题批改以下简答题，每题给出 correct (true/false) 和简短评语。返回 JSON 格式：{\"results\":[{\"id\":\"题号\",\"correct\":true,\"comment\":\"评语\"}]}。不用 markdown 代码块包裹。" },
+        { role: "system", content: (global.I18n && I18n.lang === "en" ? "You are a strict exam grader. Grade each short-answer question and give correct (true/false) and a brief comment. Respond in English. Return JSON only: {\"results\":[{\"id\":\"question-number\",\"correct\":true,\"comment\":\"comment\"}]}. No markdown code block." : "你是一位严格的阅卷老师。请逐题批改以下简答题，每题给出 correct (true/false) 和简短评语。返回 JSON 格式：{\"results\":[{\"id\":\"题号\",\"correct\":true,\"comment\":\"评语\"}]}。不用 markdown 代码块包裹。") },
         { role: "user", content: prompts }
       ];
       try {
@@ -1143,7 +1163,7 @@
       const res = await fetch("/api/ai/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, k: 5, direct: !!direct }),
+        body: JSON.stringify({ query: localizePrompt(query), k: 5, direct: !!direct }),
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
@@ -1359,7 +1379,7 @@
       let text = "";
       this.busy = true;
       try {
-        const res = await fetch("/api/ai/query", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: prompt, k: 0, direct: true }) });
+        const res = await fetch("/api/ai/query", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: localizePrompt(prompt), k: 0, direct: true }) });
         if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error || "请求失败"); }
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
@@ -1420,7 +1440,7 @@
         const res = await fetch("/api/ai/query", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: prompt, k: 0, direct: true }),
+          body: JSON.stringify({ query: localizePrompt(prompt), k: 0, direct: true }),
         });
         if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error || "请求失败"); }
         const reader = res.body.getReader();
@@ -1453,7 +1473,7 @@
       const res = await fetch("/api/ai/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: prompt, k: 0, direct: true }),
+        body: JSON.stringify({ query: localizePrompt(prompt), k: 0, direct: true }),
       });
       if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(j.error || ("请求失败 " + res.status)); }
       const reader = res.body.getReader();
