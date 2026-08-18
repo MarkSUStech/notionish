@@ -34,9 +34,10 @@
       "../clip.html"
     ],
     "win": {
-      "target": ["nsis"],
+      "target": ["dir"],
       "icon": null,
-      "sign": null
+      "sign": null,
+      "signAndEditExecutable": false
     },
     "mac": {
       "target": ["dmg"],
