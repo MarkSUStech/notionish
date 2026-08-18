@@ -13,8 +13,8 @@
       const s = document.createElement("script");
       s.src = PDFJS_URL;
       s.async = true;
-      s.onload = () => { if (global.pdfjsLib) resolve(global.pdfjsLib); else { _pdfjsPromise = null; reject(new Error("PDF.js 未就绪")); } };
-      s.onerror = () => { _pdfjsPromise = null; reject(new Error("无法加载 PDF 渲染库")); };
+      s.onload = () => { if (global.pdfjsLib) resolve(global.pdfjsLib); else { _pdfjsPromise = null; reject(new Error(U.t("PDF.js 未就绪"))); } };
+      s.onerror = () => { _pdfjsPromise = null; reject(new Error(U.t("无法加载 PDF 渲染库"))); };
       document.head.appendChild(s);
     });
     return _pdfjsPromise;
@@ -117,32 +117,32 @@
       const input = U.el("input", "web-url");
       input.type = "text";
       input.spellcheck = false;
-      input.placeholder = "输入 PDF 网址，或点「上传」选择本地 PDF";
+      input.placeholder = U.t("输入 PDF 网址，或点「上传」选择本地 PDF");
       input.value = /^data:/i.test(page.url || "") ? "" : (page.url || "");
 
       const pageInput = U.el("input", "pdf-page-input");
       pageInput.type = "number";
       pageInput.min = 1;
       pageInput.value = page.page || 1;
-      pageInput.title = "跳转到第几页";
+      pageInput.title = U.t("跳转到第几页");
 
       const hlBtn = U.el("button", "web-btn", "🖍");
-      hlBtn.title = "高亮选中文字（荧光笔）";
+      hlBtn.title = U.t("高亮选中文字（荧光笔）");
 
       const zoomOut = U.el("button", "web-btn", "−");
-      zoomOut.title = "缩小";
+      zoomOut.title = U.t("缩小");
       const zoomIn = U.el("button", "web-btn", "＋");
-      zoomIn.title = "放大";
+      zoomIn.title = U.t("放大");
 
-      const upload = U.el("button", "web-btn", "上传");
-      upload.title = "上传本地 PDF";
+      const upload = U.el("button", "web-btn", U.t("上传"));
+      upload.title = U.t("上传本地 PDF");
       const fileInput = U.el("input", null);
       fileInput.type = "file";
       fileInput.accept = "application/pdf,.pdf";
       fileInput.hidden = true;
 
       const open = U.el("button", "web-btn", "↗");
-      open.title = "在新标签页打开";
+      open.title = U.t("在新标签页打开");
 
       bar.appendChild(input);
       bar.appendChild(pageInput);
@@ -153,7 +153,7 @@
       bar.appendChild(open);
       wrap.appendChild(bar);
 
-      const status = U.el("div", "pdf-status", "加载中…");
+      const status = U.el("div", "pdf-status", U.t("加载中…"));
       wrap.appendChild(status);
 
       const pages = U.el("div", "pdf-pages");
@@ -220,15 +220,15 @@
       }
 
       if (page.url) this.load();
-      else this.statusEl.textContent = "输入 PDF 网址或上传本地文件";
+      else this.statusEl.textContent = U.t("输入 PDF 网址或上传本地文件");
     },
 
     async load() {
       const generation = ++this._generation;
       const page = this.page;
       const url = page.url || "";
-      if (!url) { this.statusEl.textContent = "无 PDF 源"; return; }
-      this.statusEl.textContent = "加载中…";
+      if (!url) { this.statusEl.textContent = U.t("无 PDF 源"); return; }
+      this.statusEl.textContent = U.t("加载中…");
       try {
         const pdfjsLib = await loadPdfjs();
         if (generation !== this._generation) return;
@@ -389,7 +389,7 @@
           div.style.height = Math.abs(p2[1] - p1[1]) + "px";
           div.style.background = h.color || "#ffe58f";
           div.dataset.highlightId = h.id;
-          div.title = "点击管理此高亮";
+          div.title = U.t("点击管理此高亮");
           div.addEventListener("click", e => {
             e.stopPropagation();
             this.showHighlightMenu(h, e.clientX, e.clientY);
@@ -404,18 +404,18 @@
         if (this._zoomTimer) clearTimeout(this._zoomTimer);
         this._zoomTimer = null;
         this.commitZoom();
-        U.toast("缩放完成后请重新选择文字");
+        U.toast(U.t("缩放完成后请重新选择文字"));
         return;
       }
       const sel = window.getSelection();
-      if (!sel || sel.isCollapsed) { U.toast("请先在 PDF 里选中要标注的文字"); return; }
+      if (!sel || sel.isCollapsed) { U.toast(U.t("请先在 PDF 里选中要标注的文字")); return; }
       const text = String(sel.toString() || "").replace(/\s+/g, " ").trim();
-      if (!text) { U.toast("请先在 PDF 里选中要标注的文字"); return; }
+      if (!text) { U.toast(U.t("请先在 PDF 里选中要标注的文字")); return; }
       const anchor = sel.anchorNode;
       const pageWrap = anchor && anchor.parentElement ? anchor.parentElement.closest(".pdf-canvas-wrap") : null;
-      if (!pageWrap) { U.toast("请在 PDF 页面内选中文字"); return; }
+      if (!pageWrap) { U.toast(U.t("请在 PDF 页面内选中文字")); return; }
       const focusWrap = sel.focusNode && sel.focusNode.parentElement ? sel.focusNode.parentElement.closest(".pdf-canvas-wrap") : null;
-      if (!focusWrap || focusWrap !== pageWrap) { U.toast("请在同一页内选中文字"); return; }
+      if (!focusWrap || focusWrap !== pageWrap) { U.toast(U.t("请在同一页内选中文字")); return; }
       const num = parseInt(pageWrap.dataset.page, 10);
       const entry = this.rendered.get(num);
       if (!entry) return;
@@ -439,7 +439,7 @@
         const p2 = viewport.convertToPdfPoint(r.right - innerRect.left, r.bottom - innerRect.top);
         rects.push([p1[0], p1[1], p2[0], p2[1]]);
       });
-      if (!rects.length) { U.toast("未能识别选中区域"); return; }
+      if (!rects.length) { U.toast(U.t("未能识别选中区域")); return; }
       const hl = { id: U.uid("hl"), page: num, text, color: "#ffe58f", rects };
       this.page.highlights = this.page.highlights || [];
       this.page.highlights.push(hl);
@@ -447,7 +447,7 @@
       global.Store.markDirty();
       this.drawHighlights(num);
       sel.removeAllRanges();
-      U.toast("已高亮");
+      U.toast(U.t("已高亮"));
     },
 
     showHighlightMenu(hl, x, y) {
@@ -460,12 +460,12 @@
         pop.appendChild(it);
       };
       const refs = global.Store.findHighlightRefs(hl.id);
-      addItem("🔗", "嵌入到其他页面", () => this.embedHighlight(hl));
+      addItem("🔗", U.t("嵌入到其他页面"), () => this.embedHighlight(hl));
       refs.forEach(r => {
         const p = global.Store.getPage(r.pageId);
-        addItem("📄", "跳到引用 · " + (p ? (U.segsText(p.title) || "未命名") : "?"), () => this.jumpToRef(r));
+        addItem("📄", U.t("跳到引用 · ") + (p ? (U.segsText(p.title) || U.t("未命名")) : "?"), () => this.jumpToRef(r));
       });
-      addItem("🗑", "删除高亮", () => this.deleteHighlight(hl), true);
+      addItem("🗑", U.t("删除高亮"), () => this.deleteHighlight(hl), true);
       document.body.appendChild(pop);
       pop.style.left = Math.min(x, window.innerWidth - 220) + "px";
       pop.style.top = y + "px";
@@ -481,7 +481,7 @@
           global.Store.insertBlock(target, blk);
           global.Store.touch(target);
           global.Store.markDirty();
-          U.toast("已嵌入到《" + (U.segsText(target.title) || "未命名") + "》");
+          U.toast(U.t("已嵌入到《") + (U.segsText(target.title) || U.t("未命名")) + U.t("》"));
         });
       }
     },
@@ -501,7 +501,7 @@
       global.Store.touch(this.page);
       global.Store.markDirty();
       this.drawHighlights(hl.page);
-      U.toast("已删除高亮");
+      U.toast(U.t("已删除高亮"));
     },
 
     flashHighlight(id) {
@@ -622,7 +622,7 @@
         div.style.backgroundImage = "url(" + im.dataUrl + ")";
         div.style.backgroundSize = "100% 100%";
         div.dataset.imageId = im.id;
-        div.title = "点击管理此图片";
+        div.title = U.t("点击管理此图片");
         div.addEventListener("click", e => { e.stopPropagation(); this.showImageMenu(im, e.clientX, e.clientY); });
         entry.imgLayer.appendChild(div);
       });
@@ -638,12 +638,12 @@
         pop.appendChild(it);
       };
       const refs = global.Store.findImageRefs(img.id);
-      addItem("🔗", "嵌入到其他页面", () => this.embedImage(img));
+      addItem("🔗", U.t("嵌入到其他页面"), () => this.embedImage(img));
       refs.forEach(r => {
         const p = global.Store.getPage(r.pageId);
-        addItem("📄", "跳到引用 · " + (p ? (U.segsText(p.title) || "未命名") : "?"), () => this.jumpToImageRef(r));
+        addItem("📄", U.t("跳到引用 · ") + (p ? (U.segsText(p.title) || U.t("未命名")) : "?"), () => this.jumpToImageRef(r));
       });
-      addItem("🗑", "移除图片引用", () => this.deleteImage(img), true);
+      addItem("🗑", U.t("移除图片引用"), () => this.deleteImage(img), true);
       document.body.appendChild(pop);
       pop.style.left = Math.min(x, window.innerWidth - 220) + "px";
       pop.style.top = y + "px";
@@ -664,7 +664,7 @@
           global.Store.insertBlock(target, blk);
           global.Store.touch(target);
           global.Store.markDirty();
-          U.toast("已嵌入到《" + (U.segsText(target.title) || "未命名") + "》");
+          U.toast(U.t("已嵌入到《") + (U.segsText(target.title) || U.t("未命名")) + U.t("》"));
         });
       }
     },
@@ -685,7 +685,7 @@
       global.Store.touch(this.page);
       global.Store.markDirty();
       this.drawPageImages(img.page);
-      U.toast("已移除图片引用");
+      U.toast(U.t("已移除图片引用"));
     },
 
     flashImage(id) {
@@ -807,7 +807,7 @@
 
     updateStatus() {
       if (!this.statusEl) return;
-      if (this.doc) this.statusEl.textContent = "共 " + this.doc.numPages + " 页 · 缩放 " + Math.round(this.scale * 100) + "%（Ctrl+滚轮缩放，选中文字后点 🖍 高亮）";
+      if (this.doc) this.statusEl.textContent = U.t("共") + " " + this.doc.numPages + " " + U.t("页 · 缩放") + " " + Math.round(this.scale * 100) + "%（Ctrl+滚轮缩放，选中文字后点 🖍 高亮）";
     },
 
     showFallback(url, err) {

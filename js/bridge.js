@@ -3,7 +3,7 @@
   "use strict";
 
   function asError(message) {
-    return { ok: false, error: String(message || "未知错误") };
+    return { ok: false, error: String(message || U.t("未知错误")) };
   }
 
   function pageSummary(page) {
@@ -41,9 +41,9 @@
     async getToken() {
       try {
         const response = await fetch("/api/bridge/token", { cache: "no-store" });
-        if (!response.ok) throw new Error("本地 MCP 服务未启动");
+        if (!response.ok) throw new Error(U.t("本地 MCP 服务未启动"));
         const data = await response.json();
-        if (!data || typeof data.token !== "string") throw new Error("MCP 服务未返回令牌");
+        if (!data || typeof data.token !== "string") throw new Error(U.t("MCP 服务未返回令牌"));
         this.token = data.token;
         this.showStatus("online");
         return true;
@@ -60,7 +60,7 @@
       while (this.token) {
         try {
           const response = await fetch("/api/bridge/poll?token=" + encodeURIComponent(this.token), { cache: "no-store" });
-          if (!response.ok) throw new Error("桥接轮询失败");
+          if (!response.ok) throw new Error(U.t("桥接轮询失败"));
           const data = await response.json();
           if (data && data.request) await this.handleRequest(data.request);
           else await this.pause(500);
@@ -100,12 +100,12 @@
       }
       if (!badge) return;
       badge.className = "ai-bridge-status " + state;
-      badge.textContent = state === "online" ? "AI 已连接" : state === "connecting" ? "AI 连接中" : "AI 未连接";
-      badge.title = state === "online" ? "本地 MCP 浏览器桥接已连接" : "请使用 node server.js 打开此页面以连接本地 MCP";
+      badge.textContent = state === "online" ? U.t("AI 已连接") : state === "connecting" ? U.t("AI 连接中") : U.t("AI 未连接");
+      badge.title = state === "online" ? U.t("本地 MCP 浏览器桥接已连接") : U.t("请使用 node server.js 打开此页面以连接本地 MCP");
     },
 
     run(request) {
-      if (!request || typeof request.tool !== "string") return asError("无效的桥接请求");
+      if (!request || typeof request.tool !== "string") return asError(U.t("无效的桥接请求"));
       try {
         return this.execute(request.tool, request.args || {});
       } catch (error) {
@@ -115,19 +115,19 @@
 
     execute(tool, args) {
       const S = global.Store;
-      if (!S || !S.state) return asError("工作区尚未初始化");
+      if (!S || !S.state) return asError(U.t("工作区尚未初始化"));
       const write = () => {
         S.save(true);
         if (global.App && typeof global.App.route === "function") global.App.route();
       };
       const page = id => {
         const value = S.getPage(id);
-        if (!value) throw new Error("页面不存在: " + id);
+        if (!value) throw new Error(U.t("页面不存在: ") + id);
         return value;
       };
       const block = (pageId, blockId) => {
         const value = S.findBlock(page(pageId), blockId);
-        if (!value) throw new Error("块不存在: " + blockId);
+        if (!value) throw new Error(U.t("块不存在: ") + blockId);
         return value;
       };
       const result = value => ({ ok: true, result: value });
@@ -146,7 +146,7 @@
             reminderCount: (S.state.reminders || []).length,
           });
         case "workspace.update_theme":
-          if (!["light", "dark"].includes(args.theme)) return asError("theme 必须为 light 或 dark");
+          if (!["light", "dark"].includes(args.theme)) return asError(U.t("theme 必须为 light 或 dark"));
           S.state.settings.theme = args.theme;
           S.applyTheme();
           S.markDirty();
@@ -193,7 +193,7 @@
           return result({ id: args.id, deleted: true, permanent: !!args.permanent });
         case "page.move":
           page(args.id);
-          if (!S.movePage(args.id, args.parentId, Number.isFinite(args.order) ? args.order : undefined)) return asError("页面移动失败");
+          if (!S.movePage(args.id, args.parentId, Number.isFinite(args.order) ? args.order : undefined)) return asError(U.t("页面移动失败"));
           write();
           return result(pageSummary(page(args.id)));
 

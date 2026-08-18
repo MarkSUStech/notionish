@@ -660,7 +660,7 @@
           const key = d.getFullYear() + "-" + d.getMonth();
           if (curKey !== key) {
             if (curKey != null) monthCells.push({ label: curLabel, count });
-            curKey = key; curLabel = d.getFullYear() + "年" + (d.getMonth() + 1) + "月"; count = 0;
+            curKey = key; curLabel = I18n.lang === "en" ? (d.getFullYear() + "/" + (d.getMonth() + 1)) : (d.getFullYear() + "年" + (d.getMonth() + 1) + "月"); count = 0;
           }
           count++;
         });

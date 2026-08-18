@@ -29,11 +29,14 @@
     /** escape attribute value */
     escAttr(s) { return U.esc(s); },
 
-    /** create element */
+    /** create element（文本参数自动翻译：整串匹配字典才翻，用户数据/拼接串返回原文） */
     el(tag, cls, html) {
       const e = document.createElement(tag);
       if (cls) e.className = cls;
-      if (html != null) e.innerHTML = html;
+      if (html != null) {
+        if (typeof html === "string" && global.I18n && I18n.lang === "en") html = U.t(html);
+        e.innerHTML = html;
+      }
       return e;
     },
 

@@ -74,7 +74,7 @@
       scroll.appendChild(head);
 
       const meta = U.el("div", "page-meta",
-        "创建于 " + U.fmtDate(page.createdAt, true) + " · 更新于 " + U.fmtDate(page.updatedAt, true));
+        U.t("创建于 ") + U.fmtDate(page.createdAt, true) + " · 更新于 " + U.fmtDate(page.updatedAt, true));
       scroll.appendChild(meta);
 
       // 考试模式：检测是否在「试卷」数据库下
@@ -90,7 +90,7 @@
         const total = Object.keys(results).length;
         const correct = Object.values(results).filter(r => r.correct).length;
         const summary = U.el("div", "q-exam-summary",
-          "已交卷 · 得分：" + correct + "/" + total +
+          U.t("已交卷 · 得分：") + correct + "/" + total +
           (total > 0 ? " (" + Math.round(correct / total * 100) + "%)" : ""));
         scroll.appendChild(summary);
       }
@@ -125,7 +125,7 @@
     async _submitExam(page) {
       const S = global.Store;
       const questions = (page.children || []).filter(b => b.type === "question");
-      if (!questions.length) { U.toast("试卷中没有题目"); return; }
+      if (!questions.length) { U.toast(U.t("试卷中没有题目")); return; }
       const results = {};
       let needAI = [];
       // 收集答案
@@ -181,7 +181,7 @@
       S.markDirty();
       S.save(true);
       this.renderPage(page.id);
-      U.toast("交卷完成！");
+      U.toast(U.t("交卷完成！"));
     },
 
     renderBlocks(page, container) {
@@ -400,10 +400,10 @@
       if (!ids.length) return;
       const blks = ids.map(id => S.findBlock(page, id)).filter(Boolean);
       const texts = blks.map(b => this.blockText(b)).filter(t => t.trim());
-      if (!texts.length) { U.toast("所选块没有可处理的文字"); return; }
+      if (!texts.length) { U.toast(U.t("所选块没有可处理的文字")); return; }
       if (!global.AI) { U.toast("AI 模块未就绪"); return; }
 
-      const req = await U.promptModal({ title: "改写所选块", placeholder: "例如：更正式、更简洁、面向初学者、统一语气…（可留空）", value: "" });
+      const req = await U.promptModal({ title: U.t("改写所选块"), placeholder: "例如：更正式、更简洁、面向初学者、统一语气…（可留空）", value: "" });
       if (req == null) return; // 取消
       const requirement = req.trim();
 
@@ -415,7 +415,7 @@
         S.touch(page); S.markDirty();
         this.clearSelection();
         this.refresh();
-        U.toast(count > 1 ? ("已改写为 " + count + " 个块") : "已改写");
+        U.toast(count > 1 ? (U.t("已改写为 ") + count + " 个块") : "已改写");
       });
     },
 
@@ -1091,27 +1091,27 @@
         U.clear(dynamic);
         const t = typeSel.value;
         if (t === "single" || t === "multiple") {
-          dynamic.appendChild(U.el("div", "q-form-label", "选项（每行一个）"));
+          dynamic.appendChild(U.el("div", "q-form-label", U.t("选项（每行一个）")));
           const opts = U.el("textarea", "modal-input q-options-input");
           opts.value = optionsText; opts.dataset.role = "options";
           dynamic.appendChild(opts);
-          dynamic.appendChild(U.el("div", "q-form-label", t === "single" ? "正确答案序号（从 1 开始）" : "正确答案序号（逗号分隔，如 1,3）"));
+          dynamic.appendChild(U.el("div", "q-form-label", t === "single" ? U.t("正确答案序号（从 1 开始）") : U.t("正确答案序号（逗号分隔，如 1,3）")));
           const ans = U.el("input", "modal-input");
           ans.value = answerText; ans.dataset.role = "answer";
           dynamic.appendChild(ans);
         } else if (t === "judge") {
-          dynamic.appendChild(U.el("div", "q-form-label", "答案"));
+          dynamic.appendChild(U.el("div", "q-form-label", U.t("答案")));
           const sel = U.el("select", "modal-input");
           [["对", "对"], ["错", "错"]].forEach(([v, l]) => { const o = U.el("option", null, l); o.value = v; if (answerText === v) o.selected = true; sel.appendChild(o); });
           sel.dataset.role = "answer";
           dynamic.appendChild(sel);
         } else if (t === "fill") {
-          dynamic.appendChild(U.el("div", "q-form-label", "答案（多个可接受答案用 | 分隔）"));
+          dynamic.appendChild(U.el("div", "q-form-label", U.t("答案（多个可接受答案用 | 分隔）")));
           const ans = U.el("input", "modal-input");
           ans.value = answerText; ans.dataset.role = "answer";
           dynamic.appendChild(ans);
         } else {
-          dynamic.appendChild(U.el("div", "q-form-label", "参考答案"));
+          dynamic.appendChild(U.el("div", "q-form-label", U.t("参考答案")));
           const ans = U.el("textarea", "modal-input");
           ans.value = answerText; ans.dataset.role = "answer";
           dynamic.appendChild(ans);
@@ -1140,9 +1140,9 @@
       const modal = U.modal({ title: "编辑闪卡", onClose: () => this.refresh() });
       const front = U.el("input", "modal-input"); front.placeholder = "正面"; front.value = f.front;
       const back = U.el("textarea", "modal-input"); back.placeholder = "背面"; back.value = f.back;
-      modal.body.appendChild(U.el("div", "q-form-label", "正面"));
+      modal.body.appendChild(U.el("div", "q-form-label", U.t("正面")));
       modal.body.appendChild(front);
-      modal.body.appendChild(U.el("div", "q-form-label", "背面"));
+      modal.body.appendChild(U.el("div", "q-form-label", U.t("背面")));
       modal.body.appendChild(back);
       const save = U.el("button", "db-btn primary", "保存");
       save.addEventListener("click", () => {
@@ -1632,7 +1632,7 @@
         const blk = S.findBlock(page, t.dataset.blockId);
         if (!blk) return;
         if (blk.type === "embed") {
-          const url = await U.promptModal({ title: "嵌入网址", value: "https://", placeholder: "https://" });
+          const url = await U.promptModal({ title: U.t("嵌入网址"), value: "https://", placeholder: "https://" });
           if (url && url.trim()) { blk.attrs.url = url.trim(); S.markDirty(); this.refresh({ id: blk.id }); }
         } else if (blk.type === "image") {
           this.pickImageFile(blk);
@@ -1667,7 +1667,7 @@
       if (t.closest(".b-bookmark")) {
         const blk = S.findBlock(page, t.closest(".b-bookmark").dataset.blockId);
         if (!blk) return;
-        const url = await U.promptModal({ title: "书签网址", value: blk.attrs.url || "https://", placeholder: "https://" });
+        const url = await U.promptModal({ title: U.t("书签网址"), value: blk.attrs.url || "https://", placeholder: "https://" });
         if (url && url.trim()) {
           blk.attrs.url = url.trim();
           blk.attrs.title = blk.attrs.title || url.trim();
@@ -1754,7 +1754,7 @@
         const blk = S.findBlock(page, t.closest(".b-code").dataset.blockId);
         if (blk && blk.attrs.source) {
           U.copyText(blk.attrs.source);
-          U.toast("已复制代码");
+          U.toast(U.t("已复制代码"));
         }
         return;
       }
@@ -2236,7 +2236,7 @@
           if (inCode) document.execCommand("insertHTML", false, txt);
           else document.execCommand("insertHTML", false, "<code>" + U.esc(txt) + "</code>");
         } else if (cmd === "link") {
-          const url = await U.promptModal({ title: "链接地址", value: "https://", placeholder: "https://" });
+          const url = await U.promptModal({ title: U.t("链接地址"), value: "https://", placeholder: "https://" });
           if (url && url.trim()) document.execCommand("createLink", false, url.trim());
         }
       } catch (err) { console.warn(err); }
@@ -2391,7 +2391,7 @@
 
     async aiBlockAction(blk, action) {
       const text = this.blockText(blk);
-      if (!text.trim()) { U.toast("这个块没有可处理的文字"); return; }
+      if (!text.trim()) { U.toast(U.t("这个块没有可处理的文字")); return; }
       if (!global.AI) { U.toast("AI 模块未就绪"); return; }
       if (action === "explain") {
         AI.toggle(true);
@@ -2403,7 +2403,7 @@
       // 重写：先询问重写要求
       let requirement = "";
       if (action === "rewrite") {
-        const req = await U.promptModal({ title: "重写要求", placeholder: "例如：更正式、更简洁、面向初学者、更像学术论文…", value: "" });
+        const req = await U.promptModal({ title: U.t("重写要求"), placeholder: "例如：更正式、更简洁、面向初学者、更像学术论文…", value: "" });
         if (req == null) return; // 取消
         requirement = req.trim();
       }
@@ -2419,7 +2419,7 @@
         const count = this.splitBlockResult(blk, result);
         S.touch(this.page); S.markDirty();
         this.refresh();
-        U.toast(count > 1 ? ("已" + label + "（拆分为 " + count + " 个块）") : "已" + label);
+        U.toast(count > 1 ? (U.t("已") + label + "（拆分为 " + count + " 个块）") : "已" + label);
       });
     },
 
@@ -2454,7 +2454,7 @@
     /** 把文本块改写成有序/无序列表（AI 生成，按项拆成多个列表块） */
     async aiBlockToList(blk, listType) {
       const text = this.blockText(blk);
-      if (!text.trim()) { U.toast("这个块没有可处理的文字"); return; }
+      if (!text.trim()) { U.toast(U.t("这个块没有可处理的文字")); return; }
       if (!global.AI) { U.toast("AI 模块未就绪"); return; }
       const label = listType === "numbered" ? "转为有序列表" : "转为无序列表";
       const marker = listType === "numbered" ? "每行以「1. 」「2. 」这样的数字编号开头" : "每行以「- 」开头";
@@ -2472,7 +2472,7 @@
     async aiGenerateHTML(blk) {
       const page = this.page;
       if (!page || !global.AI) { U.toast("AI 模块未就绪"); return; }
-      const topic = await U.promptModal({ title: "生成交互网页", placeholder: "要可视化教学的主题，如：勾股定理 / 傅里叶变换 / 二分查找…", value: this.blockText(blk) });
+      const topic = await U.promptModal({ title: U.t("生成交互网页"), placeholder: "要可视化教学的主题，如：勾股定理 / 傅里叶变换 / 二分查找…", value: this.blockText(blk) });
       if (topic == null || !topic.trim()) return;
       AI.toggle(true);
       AI.pushMessage("user", "🧩 生成交互网页：\"" + topic.trim() + "\"");
@@ -2491,7 +2491,7 @@
       pos.list.splice(pos.index + 1, 0, nb);
       S.touch(page); S.markDirty();
       this.refresh({ id: nb.id });
-      U.toast("已生成交互网页");
+      U.toast(U.t("已生成交互网页"));
     },
 
     /** 编辑 HTML 块源码 */
@@ -2502,7 +2502,7 @@
       ta.spellcheck = false;
       modal.body.appendChild(ta);
       const save = U.el("button", "db-btn primary", "保存");
-      const cancel = U.el("button", "db-btn", "取消");
+      const cancel = U.el("button", "db-btn", U.t("取消"));
       save.addEventListener("click", () => {
         blk.attrs.source = ta.value;
         S.touch(this.page); S.markDirty();
@@ -2517,10 +2517,10 @@
     /** 用 AI 修复 mermaid / html 等需渲染块的源码（用户描述问题） */
     async aiFixBlock(blk) {
       const source = (blk.attrs && blk.attrs.source) || "";
-      if (!source.trim()) { U.toast("这个块没有可修复的源码"); return; }
+      if (!source.trim()) { U.toast(U.t("这个块没有可修复的源码")); return; }
       if (!global.AI) { U.toast("AI 模块未就绪"); return; }
       const kindName = blk.type === "mermaid" ? "Mermaid 图表" : blk.type === "html" ? "交互网页 HTML" : "代码";
-      const problem = await U.promptModal({ title: "修复 " + kindName, placeholder: "描述问题，例如：图表渲染不出来 / 语法报错 / 想改成更简洁的样式…" });
+      const problem = await U.promptModal({ title: U.t("修复 ") + kindName, placeholder: "描述问题，例如：图表渲染不出来 / 语法报错 / 想改成更简洁的样式…" });
       if (problem == null || !problem.trim()) return;
       AI.toggle(true);
       AI.pushMessage("user", "🛠 修复" + kindName + "：" + problem.trim());
@@ -2595,11 +2595,11 @@
         sep();
       }
       addItem("⧉", "复制块", () => this.duplicateBlock(blk));
-      addItem("✂️", "剪切", () => { this._clipboard = U.clone(blk); this.deleteBlock(blk); U.toast("已剪切"); });
+      addItem("✂️", "剪切", () => { this._clipboard = U.clone(blk); this.deleteBlock(blk); U.toast(U.t("已剪切")); });
       if (this._clipboard) addItem("📋", "粘贴", () => this.pasteClipboard(blk));
       addItem("🔗", "复制块链接", () => {
         U.copyText(location.origin + location.pathname + "#" + page.id + "-" + blk.id);
-        U.toast("块链接已复制");
+        U.toast(U.t("块链接已复制"));
       });
       addItem("📦", "移至其他页面", () => this.moveBlockToPage(blk));
       addItem("💬", "评论 (" + (blk.comments ? blk.comments.length : 0) + ")", () => this.openComments(blk));
@@ -2633,7 +2633,7 @@
     async setColumnsCount(blk) {
       const page = this.page;
       const cur = (blk.children || []).length || 2;
-      const n = parseInt(await U.promptModal({ title: "设置栏数", value: String(cur), placeholder: "2-4" }), 10);
+      const n = parseInt(await U.promptModal({ title: U.t("设置栏数"), value: String(cur), placeholder: "2-4" }), 10);
       if (!n || n < 2 || n > 4 || n === cur) return;
       blk.children = blk.children || [];
       if (n > cur) {
@@ -2856,7 +2856,7 @@
       ta.placeholder = "写下评论…";
       modal.body.appendChild(ta);
       const foot = U.el("div", null);
-      const send = U.el("button", "db-btn primary", "发表");
+      const send = U.el("button", "db-btn primary", U.t("发表"));
       send.addEventListener("click", () => {
         const text = ta.value.trim();
         if (!text) return;
