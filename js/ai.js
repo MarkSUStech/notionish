@@ -667,11 +667,11 @@
       if (!this.sendBtn) return;
       if (this.busy) {
         this.sendBtn.textContent = "■";
-        this.sendBtn.title = "停止生成";
+        this.sendBtn.title = U.t("停止生成");
         this.sendBtn.classList.add("ai-send-stop");
       } else {
         this.sendBtn.textContent = "➤";
-        this.sendBtn.title = "发送";
+        this.sendBtn.title = U.t("发送");
         this.sendBtn.classList.remove("ai-send-stop");
       }
     },
@@ -1247,7 +1247,7 @@
     /** 弹出多选，让用户选择希望使用的块类型；返回 blockTypes 数组 */
     askBlockTypes(purpose) {
       return new Promise(resolve => {
-        const modal = U.modal({ title: "选择块类型", size: "sm", onClose: () => resolve([]) });
+        const modal = U.modal({ title: U.t("选择块类型"), size: "sm", onClose: () => resolve([]) });
         const hint = U.el("div", "modal-msg", U.esc(purpose || "请选择你希望使用的块类型（可多选）"));
         hint.style.marginBottom = "10px";
         modal.body.appendChild(hint);
@@ -1549,7 +1549,7 @@
     },
 
     async generateNote() {
-      const topic = await U.promptModal({ title: "生成笔记", placeholder: "请输入要生成笔记的主题 / 知识点" });
+      const topic = await U.promptModal({ title: U.t("生成笔记"), placeholder: U.t("请输入要生成笔记的主题 / 知识点") });
       if (!topic || !topic.trim()) return;
       const t = topic.trim();
       this.proposeStructured("生成笔记 · " + t, buildNotePrompt(t, this.styleHint()), (parsed, body) => {

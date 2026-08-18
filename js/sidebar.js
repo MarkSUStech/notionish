@@ -158,7 +158,7 @@
         // 清空回收站按钮
         const emptyBtn = U.el("button", "mini-btn sb-trash-empty", "清空回收站");
         emptyBtn.addEventListener("click", async () => {
-          const ok = await U.confirmModal({ title: "清空回收站", message: "将彻底删除回收站中所有页面，此操作不可撤销。", okText: "全部删除", danger: true });
+          const ok = await U.confirmModal({ title: U.t("清空回收站"), message: "将彻底删除回收站中所有页面，此操作不可撤销。", okText: "全部删除", danger: true });
           if (ok) {
             trash.forEach(p => S.deletePage(p.id, true));
             this.render();
@@ -173,10 +173,10 @@
           const nm = U.el("span", "t-name", U.segsText(p.title) || "未命名");
           const tools = U.el("span", "t-tools");
           const restore = U.el("button", "mini-btn", "↩");
-          restore.title = "恢复";
+          restore.title = U.t("恢复");
           restore.dataset.action = "restore";
           const del = U.el("button", "mini-btn", "✕");
-          del.title = "彻底删除";
+          del.title = U.t("彻底删除");
           del.dataset.action = "purge";
           tools.appendChild(restore); tools.appendChild(del);
           row.appendChild(ico); row.appendChild(nm); row.appendChild(tools);
@@ -240,12 +240,12 @@
       const tools = U.el("span", "t-tools");
       if (!isFav) {
         const add = U.el("button", "mini-btn", "＋");
-        add.title = "在页面下新建子页面";
+        add.title = U.t("在页面下新建子页面");
         add.dataset.action = "add-child";
         tools.appendChild(add);
       }
       const more = U.el("button", "mini-btn", "⋯");
-      more.title = "更多操作";
+      more.title = U.t("更多操作");
       more.dataset.action = "more";
       tools.appendChild(more);
       row.appendChild(tw); row.appendChild(ico); row.appendChild(nm); row.appendChild(tools);

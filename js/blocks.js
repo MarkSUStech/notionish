@@ -344,7 +344,7 @@
     ed.contentEditable = "true";
     ed.spellcheck = false;
     ed.dataset.blockId = block.id;
-    ed.dataset.ph = ph || "输入文字，或输入 / 查看命令…";
+    ed.dataset.ph = U.t(ph || "输入文字，或输入 / 查看命令…");
     ed.innerHTML = segsToHTML(block.text);
     return ed;
   }
@@ -371,17 +371,17 @@
     inner.appendChild(ghost);
     const tools = U.el("div", "b-tools");
     const addBtn = U.el("button", "b-add-btn", "＋");
-    addBtn.title = "在下方插入块";
+    addBtn.title = U.t("在下方插入块");
     addBtn.dataset.blockId = block.id;
     const grip = U.el("span", "b-grip", "⋮⋮");
-    grip.title = "拖拽移动 (右键更多操作)";
+    grip.title = U.t("拖拽移动 (右键更多操作)");
     grip.draggable = true;
     grip.dataset.blockId = block.id;
     tools.appendChild(addBtn);
     tools.appendChild(grip);
     if (block.comments && block.comments.length) {
       const c = U.el("button", "b-comment", "💬" + block.comments.length);
-      c.title = "查看评论";
+      c.title = U.t("查看评论");
       c.dataset.blockId = block.id;
       tools.appendChild(c);
     }
@@ -423,7 +423,7 @@
     const cb = U.el("span", "b-checkbox" + (b.checked ? " checked" : ""));
     cb.textContent = b.checked ? "✓" : "";
     cb.dataset.blockId = b.id;
-    cb.title = "切换完成状态";
+    cb.title = U.t("切换完成状态");
     row.appendChild(cb);
     row.appendChild(edEl(b, "p"));
     if (b.checked) row.classList.add("done");
@@ -433,7 +433,7 @@
     const row = U.el("div", "b-list-row");
     const caret = U.el("span", "toggle-caret", "▾");
     caret.dataset.blockId = b.id;
-    caret.title = "展开/折叠";
+    caret.title = U.t("展开/折叠");
     row.appendChild(caret);
     row.appendChild(edEl(b, "p"));
     return row;
@@ -447,7 +447,7 @@
     const wrap = U.el("div", "b-callout");
     const ico = U.el("span", "co-ico", b.attrs.icon || "💡");
     ico.dataset.blockId = b.id;
-    ico.title = "点击更换图标";
+    ico.title = U.t("点击更换图标");
     wrap.appendChild(ico);
     wrap.appendChild(edEl(b, "p", "输入文字…"));
     return wrap;
@@ -472,7 +472,7 @@
     });
     head.appendChild(langSel);
     const copyBtn = U.el("button", "tb-btn", "⧉");
-    copyBtn.title = "复制代码";
+    copyBtn.title = U.t("复制代码");
     copyBtn.dataset.blockId = b.id;
     head.appendChild(copyBtn);
     wrap.appendChild(head);
@@ -528,7 +528,7 @@
       // 缩放把手（仅在非静默模式下）
       if (!ctx.silent) {
         const handle = U.el("div", "b-img-resize");
-        handle.title = "拖拽缩放图片";
+        handle.title = U.t("拖拽缩放图片");
         imgWrap.appendChild(handle);
         // 缩放拖拽逻辑
         let dragging = false, startX, startW;
@@ -587,7 +587,7 @@
     input.placeholder = "输入网址，如 example.com…";
     input.value = b.attrs.url || "";
     const open = U.el("button", "embed-open", "↗");
-    open.title = "在新标签页打开";
+    open.title = U.t("在新标签页打开");
     bar.appendChild(input);
     bar.appendChild(open);
     wrap.appendChild(bar);
@@ -632,9 +632,9 @@
     pageInput.type = "number";
     pageInput.min = 1;
     pageInput.value = b.attrs.page || 1;
-    pageInput.title = "默认显示第几页";
+    pageInput.title = U.t("默认显示第几页");
     const open = U.el("button", "embed-open", "↗");
-    open.title = "在新标签页打开";
+    open.title = U.t("在新标签页打开");
     bar.appendChild(input); bar.appendChild(pageInput); bar.appendChild(open);
     wrap.appendChild(bar);
 
@@ -725,7 +725,7 @@
       if (!ctx.silent) {
         const rctl = U.el("td", "tc-ctl");
         const rdel = U.el("span", "tc-rowdel", "✕");
-        rdel.title = "删除此行";
+        rdel.title = U.t("删除此行");
         rdel.dataset.blockId = b.id;
         rdel.dataset.role = "row-del";
         rdel.dataset.row = ri;
@@ -744,7 +744,7 @@
         cell.appendChild(ed);
         if (!ctx.silent && ri === 0) {
           const cdel = U.el("span", "tc-del", "✕");
-          cdel.title = "删除此列";
+          cdel.title = U.t("删除此列");
           cdel.dataset.blockId = b.id;
           cdel.dataset.role = "col-del";
           cdel.dataset.col = ci;
@@ -760,11 +760,11 @@
       const addRow = U.el("button", "tc-add", "＋ 行");
       addRow.dataset.blockId = b.id;
       addRow.dataset.role = "add-row";
-      addRow.title = "新增一行";
+      addRow.title = U.t("新增一行");
       const addCol = U.el("button", "tc-add", "＋ 列");
       addCol.dataset.blockId = b.id;
       addCol.dataset.role = "add-col";
-      addCol.title = "新增一列";
+      addCol.title = U.t("新增一列");
       bar.appendChild(addRow);
       bar.appendChild(addCol);
       wrap.appendChild(bar);
@@ -799,12 +799,12 @@
     const fixBtn = U.el("button", "mm-btn mm-fix", "🛠 修复");
     fixBtn.dataset.blockId = b.id;
     fixBtn.dataset.role = "mm-fix";
-    fixBtn.title = "用 AI 修复图表（描述问题）";
+    fixBtn.title = U.t("用 AI 修复图表（描述问题）");
     head.appendChild(fixBtn);
     const btn = U.el("button", "mm-btn", "渲染");
     btn.dataset.blockId = b.id;
     btn.dataset.role = "mm-render";
-    btn.title = "渲染图表";
+    btn.title = U.t("渲染图表");
     head.appendChild(btn);
     wrap.appendChild(head);
     const ta = U.el("textarea", "mm-edit");
@@ -831,18 +831,18 @@
     const fixBtn = U.el("button", "b-html-btn", "🛠 修复");
     fixBtn.dataset.blockId = b.id;
     fixBtn.dataset.role = "html-fix";
-    fixBtn.title = "用 AI 修复网页（描述问题）";
+    fixBtn.title = U.t("用 AI 修复网页（描述问题）");
     bar.appendChild(fixBtn);
     const editBtn = U.el("button", "b-html-btn", "✏️ 编辑");
     editBtn.dataset.blockId = b.id;
     editBtn.dataset.role = "html-edit";
-    editBtn.title = "编辑 HTML 源码";
+    editBtn.title = U.t("编辑 HTML 源码");
     bar.appendChild(editBtn);
     wrap.appendChild(bar);
     const frame = U.el("iframe", "b-html-frame");
     frame.setAttribute("sandbox", "allow-scripts allow-popups");
     frame.srcdoc = b.attrs.source || '<div style="color:#999;padding:24px;font-family:sans-serif;text-align:center">空交互网页（可在块菜单编辑 HTML）</div>';
-    frame.title = "交互网页";
+    frame.title = U.t("交互网页");
     wrap.appendChild(frame);
     return wrap;
   }});
@@ -1094,14 +1094,14 @@ function examCheck(name, value, label) {
         const head = U.el("div", "b-col-head");
         if (i > 0) {
           const left = U.el("button", "b-col-swap", "◀");
-          left.title = "向左交换";
+          left.title = U.t("向左交换");
           left.addEventListener("click", () => { swapColumns(b, i, i - 1); });
           head.appendChild(left);
         }
         head.appendChild(U.el("span", "b-col-num", "栏 " + (i + 1)));
         if (i < cols.length - 1) {
           const right = U.el("button", "b-col-swap", "▶");
-          right.title = "向右交换";
+          right.title = U.t("向右交换");
           right.addEventListener("click", () => { swapColumns(b, i, i + 1); });
           head.appendChild(right);
         }
@@ -1117,7 +1117,7 @@ function examCheck(name, value, label) {
       // 栏间拖拽手柄（放在栏内右边缘）
       if (!ctx.silent && i < cols.length - 1) {
         const handle = U.el("div", "b-col-resize");
-        handle.title = "拖拽调整栏宽";
+        handle.title = U.t("拖拽调整栏宽");
         colEl.appendChild(handle);
         handle.addEventListener("mousedown", e => {
           e.preventDefault(); e.stopPropagation();

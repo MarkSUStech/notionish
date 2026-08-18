@@ -107,14 +107,14 @@
       row.appendChild(ico);
       const name = U.el("span", "kb-doc-name", U.esc(d.name));
       name.style.cursor = "pointer";
-      name.title = "点击预览";
+      name.title = U.t("点击预览");
       name.addEventListener("click", () => this.previewDoc(kbId, d));
       row.appendChild(name);
       row.appendChild(U.el("span", "kb-doc-kind", U.esc(KIND_LABEL[d.kind] || d.kind)));
       row.appendChild(U.el("span", "kb-doc-status " + (d.indexed ? "ok" : "warn"), d.indexed ? "已索引" : "未索引"));
 
       const del = U.el("button", "icon-btn", "🗑");
-      del.title = "删除";
+      del.title = U.t("删除");
       del.addEventListener("click", async (e) => {
         e.stopPropagation();
         if (await U.confirmModal("删除资料", "确定删除「" + d.name + "」吗？", "删除")) {

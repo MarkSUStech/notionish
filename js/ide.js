@@ -110,16 +110,16 @@
       // activity bar
       const activity = U.el("div", "ide-activity");
       const explorerBtn = U.el("button", "ide-act-btn active");
-      explorerBtn.title = "资源管理器 (Ctrl+B)";
+      explorerBtn.title = U.t("资源管理器 (Ctrl+B)");
       explorerBtn.innerHTML = "📁";
       explorerBtn.addEventListener("click", () => this.toggleExplorer(explorerBtn));
       activity.appendChild(explorerBtn);
       const runBtn = U.el("button", "ide-act-btn");
-      runBtn.title = "运行 (Ctrl+Enter)";
+      runBtn.title = U.t("运行 (Ctrl+Enter)");
       runBtn.innerHTML = "▶";
       runBtn.addEventListener("click", () => this.run());
       const stopBtn = U.el("button", "ide-act-btn");
-      stopBtn.title = "停止运行";
+      stopBtn.title = U.t("停止运行");
       stopBtn.innerHTML = "■";
       stopBtn.addEventListener("click", () => this.stop());
       activity.appendChild(runBtn); activity.appendChild(stopBtn);
@@ -258,7 +258,7 @@
         const title = U.el("span", "ide-tab-title", U.segsText(page.title).trim() || "未命名");
         title.addEventListener("click", () => this.openFile(id));
         const close = U.el("span", "ide-tab-close", "×");
-        close.title = "关闭";
+        close.title = U.t("关闭");
         close.addEventListener("click", (e) => { e.stopPropagation(); this.closeTab(id); });
         tab.appendChild(title); tab.appendChild(close);
         this._tabsEl.appendChild(tab);

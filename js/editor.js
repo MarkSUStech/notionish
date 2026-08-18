@@ -61,7 +61,7 @@
       // head: icon + title
       const head = U.el("div", "page-head");
       const iconEl = U.el("div", "page-icon", page.icon || "");
-      iconEl.title = "点击更换图标";
+      iconEl.title = U.t("点击更换图标");
       iconEl.dataset.role = "page-icon";
       head.appendChild(iconEl);
       const title = U.el("div", "page-title-input");
@@ -403,7 +403,7 @@
       if (!texts.length) { U.toast(U.t("所选块没有可处理的文字")); return; }
       if (!global.AI) { U.toast("AI 模块未就绪"); return; }
 
-      const req = await U.promptModal({ title: U.t("改写所选块"), placeholder: "例如：更正式、更简洁、面向初学者、统一语气…（可留空）", value: "" });
+      const req = await U.promptModal({ title: U.t("改写所选块"), placeholder: U.t("例如：更正式、更简洁、面向初学者、统一语气…（可留空）"), value: "" });
       if (req == null) return; // 取消
       const requirement = req.trim();
 
@@ -511,7 +511,7 @@
 
       // 共享的块级 AI 浮动按钮（固定定位，避免块外侧空隙导致失焦）
       const aiBtn = U.el("button", "block-ai-btn", "✦");
-      aiBtn.title = "AI 助手：讲解 / 扩写 / 缩写 / 重写";
+      aiBtn.title = U.t("AI 助手：讲解 / 扩写 / 缩写 / 重写");
       aiBtn.style.display = "none";
       document.body.appendChild(aiBtn);
       aiBtn.addEventListener("mousedown", (e) => e.preventDefault()); // 保持块焦点不丢失
@@ -652,7 +652,7 @@
       span.contentEditable = "false";
       span.dataset.math = latex;
       span.dataset.src = full;
-      span.title = "点击编辑公式";
+      span.title = U.t("点击编辑公式");
       span.innerHTML = MathR.renderInline(latex) || U.esc(latex);
       range.deleteContents();
       range.insertNode(span);
@@ -1071,7 +1071,7 @@
     editQuestion(blk) {
       const q = blk.attrs.qid ? S.getQuestion(blk.attrs.qid) : null;
       if (!q) return;
-      const modal = U.modal({ title: "编辑题目", onClose: () => this.refresh() });
+      const modal = U.modal({ title: U.t("编辑题目"), onClose: () => this.refresh() });
       const typeSel = U.el("select", "modal-input");
       [["single", "单选"], ["multiple", "多选"], ["judge", "判断"], ["fill", "填空"], ["short_answer", "简答"]].forEach(([v, l]) => {
         const o = U.el("option", null, l); o.value = v; if (q.type === v) o.selected = true; typeSel.appendChild(o);
@@ -1137,7 +1137,7 @@
     editFlashcard(blk) {
       const f = blk.attrs.fid ? S.getFlashcard(blk.attrs.fid) : null;
       if (!f) return;
-      const modal = U.modal({ title: "编辑闪卡", onClose: () => this.refresh() });
+      const modal = U.modal({ title: U.t("编辑闪卡"), onClose: () => this.refresh() });
       const front = U.el("input", "modal-input"); front.placeholder = "正面"; front.value = f.front;
       const back = U.el("textarea", "modal-input"); back.placeholder = "背面"; back.value = f.back;
       modal.body.appendChild(U.el("div", "q-form-label", U.t("正面")));
@@ -2177,13 +2177,13 @@
         mk("🔗", "链接", "link");
         const colorBtn = U.el("button", "tb-btn", "A");
         colorBtn.style.color = "#d9730d";
-        colorBtn.title = "文字颜色";
+        colorBtn.title = U.t("文字颜色");
         colorBtn.dataset.cmd = "color";
         colorBtn.addEventListener("mousedown", (e) => e.preventDefault());
         colorBtn.addEventListener("click", () => this.openColorMenu(colorBtn, "color"));
         tb.appendChild(colorBtn);
         const bgBtn = U.el("button", "tb-btn", "🖍");
-        bgBtn.title = "背景颜色";
+        bgBtn.title = U.t("背景颜色");
         bgBtn.dataset.cmd = "bg";
         bgBtn.addEventListener("mousedown", (e) => e.preventDefault());
         bgBtn.addEventListener("click", () => this.openColorMenu(bgBtn, "bg"));
@@ -2291,7 +2291,7 @@
 
     /* ================= Emoji picker ================= */
     openEmojiPicker(cb) {
-      const modal = U.modal({ title: "选择图标" });
+      const modal = U.modal({ title: U.t("选择图标") });
       const search = U.el("input", "modal-input");
       search.placeholder = "搜索图标（支持中文关键词）…";
       search.style.marginBottom = "10px";
@@ -2403,7 +2403,7 @@
       // 重写：先询问重写要求
       let requirement = "";
       if (action === "rewrite") {
-        const req = await U.promptModal({ title: U.t("重写要求"), placeholder: "例如：更正式、更简洁、面向初学者、更像学术论文…", value: "" });
+        const req = await U.promptModal({ title: U.t("重写要求"), placeholder: U.t("例如：更正式、更简洁、面向初学者、更像学术论文…"), value: "" });
         if (req == null) return; // 取消
         requirement = req.trim();
       }
@@ -2472,7 +2472,7 @@
     async aiGenerateHTML(blk) {
       const page = this.page;
       if (!page || !global.AI) { U.toast("AI 模块未就绪"); return; }
-      const topic = await U.promptModal({ title: U.t("生成交互网页"), placeholder: "要可视化教学的主题，如：勾股定理 / 傅里叶变换 / 二分查找…", value: this.blockText(blk) });
+      const topic = await U.promptModal({ title: U.t("生成交互网页"), placeholder: U.t("要可视化教学的主题，如：勾股定理 / 傅里叶变换 / 二分查找…"), value: this.blockText(blk) });
       if (topic == null || !topic.trim()) return;
       AI.toggle(true);
       AI.pushMessage("user", "🧩 生成交互网页：\"" + topic.trim() + "\"");
@@ -2496,7 +2496,7 @@
 
     /** 编辑 HTML 块源码 */
     editHTML(blk) {
-      const modal = U.modal({ title: "编辑 HTML 源码", size: "lg" });
+      const modal = U.modal({ title: U.t("编辑 HTML 源码"), size: "lg" });
       const ta = U.el("textarea", "html-edit-ta");
       ta.value = blk.attrs.source || "";
       ta.spellcheck = false;
@@ -2520,7 +2520,7 @@
       if (!source.trim()) { U.toast(U.t("这个块没有可修复的源码")); return; }
       if (!global.AI) { U.toast("AI 模块未就绪"); return; }
       const kindName = blk.type === "mermaid" ? "Mermaid 图表" : blk.type === "html" ? "交互网页 HTML" : "代码";
-      const problem = await U.promptModal({ title: U.t("修复 ") + kindName, placeholder: "描述问题，例如：图表渲染不出来 / 语法报错 / 想改成更简洁的样式…" });
+      const problem = await U.promptModal({ title: U.t("修复 ") + kindName, placeholder: U.t("描述问题，例如：图表渲染不出来 / 语法报错 / 想改成更简洁的样式…") });
       if (problem == null || !problem.trim()) return;
       AI.toggle(true);
       AI.pushMessage("user", "🛠 修复" + kindName + "：" + problem.trim());
@@ -2821,7 +2821,7 @@
     /* ---------- comments ---------- */
     openComments(blk) {
       const page = this.page;
-      const modal = U.modal({ title: "评论", onClose: () => this.refresh() });
+      const modal = U.modal({ title: U.t("评论"), onClose: () => this.refresh() });
       blk.comments = blk.comments || [];
       const list = U.el("div", null);
       modal.body.appendChild(list);
@@ -2838,7 +2838,7 @@
           const head = U.el("div", "comment-head");
           head.innerHTML = '<span class="cm-author">🙂 我</span><span class="cm-time">' + U.fmtDate(c.createdAt) + '</span>';
           const del = U.el("button", "icon-btn", U.icon("trash-2", { size: 16 }));
-          del.title = "删除评论";
+          del.title = U.t("删除评论");
           del.addEventListener("click", () => {
             blk.comments = blk.comments.filter(x => x !== c);
             S.touch(page); S.markDirty();

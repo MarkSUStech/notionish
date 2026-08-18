@@ -37,7 +37,7 @@
 
       const head = U.el("div", "page-head");
       const iconEl = U.el("div", "page-icon", page.icon || "🗄");
-      iconEl.title = "点击更换图标";
+      iconEl.title = U.t("点击更换图标");
       iconEl.dataset.role = "db-icon";
       head.appendChild(iconEl);
       const title = U.el("div", "db-title");
@@ -81,7 +81,7 @@
       });
       bar.appendChild(U.el("div", null, ""));
       const newBtn = U.el("button", "db-btn primary", "＋ 新建");
-      newBtn.title = "添加一条记录";
+      newBtn.title = U.t("添加一条记录");
       newBtn.dataset.action = "new-row";
       bar.appendChild(newBtn);
       const filterBtn = U.el("button", "db-btn", "⏳ 筛选" + ((page.viewState.filter.rules || []).length ? " (" + page.viewState.filter.rules.length + ")" : ""));
@@ -230,7 +230,7 @@
         });
         const tdDel = U.el("td");
         const del = U.el("button", "icon-btn", U.icon("trash-2", { size: 16 }));
-        del.title = "删除记录";
+        del.title = U.t("删除记录");
         del.dataset.action = "del-row";
         del.dataset.rowId = row.id;
         tdDel.appendChild(del);
@@ -334,7 +334,7 @@
           p.dataset.prop = prop.id;
           p.dataset.kind = "rel-remove";
           p.dataset.pageId = r.id;
-          p.title = "点击移除关联";
+          p.title = U.t("点击移除关联");
           holder.appendChild(p);
         });
         const addP = U.el("span", "pill p-gray", "＋ 添加");
@@ -850,7 +850,7 @@
       }
       if (action === "del-row") {
         const rowId = t.dataset.rowId;
-        const ok = await U.confirmModal({ title: "删除记录", message: "确定删除这条记录吗？", okText: "删除", danger: true });
+        const ok = await U.confirmModal({ title: U.t("删除记录"), message: "确定删除这条记录吗？", okText: "删除", danger: true });
         if (ok) {
           S.deletePage(rowId, false);
           this.render(page);
@@ -860,7 +860,7 @@
       if (action === "board-add-group") {
         const prop = page.schema.props.find(p => p.id === t.dataset.prop);
         if (!prop) return;
-        const name = await U.promptModal({ title: "新分组", placeholder: "分组名称" });
+        const name = await U.promptModal({ title: U.t("新分组"), placeholder: U.t("分组名称") });
         if (name && name.trim()) {
           prop.options = prop.options || [];
           prop.options.push(name.trim());
@@ -994,7 +994,7 @@
       add.innerHTML = '<span class="mi-ico">＋</span><span class="mi-label">添加选项…</span>';
       add.addEventListener("click", async () => {
         pop.remove();
-        const name = await U.promptModal({ title: "添加选项", placeholder: "选项名称" });
+        const name = await U.promptModal({ title: U.t("添加选项"), placeholder: U.t("选项名称") });
         if (name && name.trim()) {
           prop.options = prop.options || [];
           prop.options.push(name.trim());
@@ -1037,7 +1037,7 @@
       add.innerHTML = '<span class="mi-ico">＋</span><span class="mi-label">添加选项…</span>';
       add.addEventListener("click", async () => {
         pop.remove();
-        const name = await U.promptModal({ title: "添加选项", placeholder: "选项名称" });
+        const name = await U.promptModal({ title: U.t("添加选项"), placeholder: U.t("选项名称") });
         if (name && name.trim()) {
           prop.options = prop.options || [];
           prop.options.push(name.trim());
@@ -1056,7 +1056,7 @@
     /* property manager modal */
     openPropManager(focusPropId) {
       const page = this.page;
-      const modal = U.modal({ title: "数据库属性" });
+      const modal = U.modal({ title: U.t("数据库属性") });
       const list = U.el("div", null);
       modal.body.appendChild(list);
       const render = () => {
@@ -1090,7 +1090,7 @@
             render();
           });
           const del = U.el("button", "icon-btn", U.icon("trash-2", { size: 16 }));
-          del.title = "删除属性";
+          del.title = U.t("删除属性");
           del.addEventListener("click", () => {
             if (page.schema.props.length <= 1) { U.toast("至少保留一个属性"); return; }
             page.schema.props = page.schema.props.filter(p => p.id !== prop.id);
@@ -1110,7 +1110,7 @@
             opts.style.gap = "4px";
             (prop.options || []).forEach(o => {
               const p = U.el("span", "pill " + U.pillColor(o), U.esc(o) + ' <span class="pill-x">✕</span>');
-              p.title = "删除选项";
+              p.title = U.t("删除选项");
               p.addEventListener("click", () => {
                 prop.options = prop.options.filter(x => x !== o);
                 this.rows().forEach(r => {
@@ -1124,7 +1124,7 @@
             });
             const add = U.el("span", "pill p-gray", "＋ 添加");
             add.addEventListener("click", async () => {
-              const name = await U.promptModal({ title: "添加选项", placeholder: "选项名称" });
+              const name = await U.promptModal({ title: U.t("添加选项"), placeholder: U.t("选项名称") });
               if (name && name.trim()) {
                 prop.options = prop.options || [];
                 prop.options.push(name.trim());
@@ -1217,7 +1217,7 @@
 
     openPropDialog(closeCb) {
       const page = this.page;
-      const modal = U.modal({ title: "添加属性", size: "sm" });
+      const modal = U.modal({ title: U.t("添加属性"), size: "sm" });
       const name = U.el("input", "modal-input");
       name.placeholder = "属性名称";
       name.style.marginBottom = "8px";
@@ -1274,7 +1274,7 @@
 
     openFilterModal() {
       const page = this.page;
-      const modal = U.modal({ title: "筛选", onClose: () => this.render(page) });
+      const modal = U.modal({ title: U.t("筛选"), onClose: () => this.render(page) });
       const list = U.el("div", null);
       modal.body.appendChild(list);
       const fs = page.viewState.filter = page.viewState.filter || { rules: [] };
@@ -1309,7 +1309,7 @@
           row.appendChild(opSel);
           if (this.filterOpNeedsValue(rule.op)) row.appendChild(this.filterValueInput(rule, prop));
           const del = U.el("button", "icon-btn", U.icon("trash-2", { size: 16 }));
-          del.title = "删除此条件";
+          del.title = U.t("删除此条件");
           del.addEventListener("click", () => { fs.rules.splice(idx, 1); S.markDirty(); render(); });
           row.appendChild(del);
           list.appendChild(row);
@@ -1333,7 +1333,7 @@
 
     openSortModal() {
       const page = this.page;
-      const modal = U.modal({ title: "排序", onClose: () => this.render(page) });
+      const modal = U.modal({ title: U.t("排序"), onClose: () => this.render(page) });
       const list = U.el("div", null);
       modal.body.appendChild(list);
       const ss = page.viewState.sort = page.viewState.sort || { rules: [] };
@@ -1359,7 +1359,7 @@
           dirSel.addEventListener("change", () => { rule.dir = dirSel.value; S.markDirty(); });
           row.appendChild(dirSel);
           const del = U.el("button", "icon-btn", U.icon("trash-2", { size: 16 }));
-          del.title = "删除此排序";
+          del.title = U.t("删除此排序");
           del.addEventListener("click", () => { ss.rules.splice(idx, 1); S.markDirty(); render(); });
           row.appendChild(del);
           list.appendChild(row);

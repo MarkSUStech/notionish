@@ -262,9 +262,9 @@
           const head = U.el("div", "pane-head");
           const title = U.el("div", "pane-title");
           const full = U.el("button", "pane-btn", "↗");
-          full.title = "全屏打开此页";
+          full.title = U.t("全屏打开此页");
           const close = U.el("button", "pane-btn", "×");
-          close.title = "关闭此窗";
+          close.title = U.t("关闭此窗");
           head.appendChild(title); head.appendChild(full); head.appendChild(close);
           const body = U.el("div", "pane-body");
           p.appendChild(head); p.appendChild(body);
@@ -377,7 +377,7 @@
 
     /** 从网址剪藏：服务器抓取网页正文 → 创建笔记 */
     async clipFromUrl(presetUrl) {
-      const url = presetUrl || await U.promptModal({ title: "从网址剪藏", placeholder: "https://…", value: "" });
+      const url = presetUrl || await U.promptModal({ title: U.t("从网址剪藏"), placeholder: "https://…", value: "" });
       if (!url || !url.trim()) return;
       const normalized = /^https?:\/\//i.test(url.trim()) ? url.trim() : "https://" + url.trim();
       U.toast("正在抓取网页…");
@@ -505,7 +505,7 @@
       });
       const bell = U.el("button", "icon-btn", U.icon("bell", { size: 18 }));
       bell.id = "topbar-bell";
-      bell.title = "提醒";
+      bell.title = U.t("提醒");
       bell.setAttribute("aria-label", "提醒");
       document.getElementById("topbar").appendChild(bell);
       bell.addEventListener("click", () => this.openRemindersPanel());
@@ -513,14 +513,14 @@
 
       const settings = U.el("button", "icon-btn", U.icon("settings", { size: 18 }));
       settings.id = "topbar-settings";
-      settings.title = "设置";
+      settings.title = U.t("设置");
       settings.setAttribute("aria-label", "设置");
       document.getElementById("topbar").appendChild(settings);
       settings.addEventListener("click", () => { location.hash = "settings"; });
 
       const splitBtn = U.el("button", "icon-btn", U.icon("columns", { size: 18 }));
       splitBtn.id = "topbar-split";
-      splitBtn.title = "分屏（左右同时看两篇）";
+      splitBtn.title = U.t("分屏（左右同时看两篇）");
       splitBtn.setAttribute("aria-label", "分屏");
       document.getElementById("topbar").appendChild(splitBtn);
       splitBtn.addEventListener("click", () => this.toggleSplit());
@@ -562,7 +562,7 @@
       actions.appendChild(cov);
 
       const more = U.el("button", "icon-btn", U.icon("ellipsis", { size: 18 }));
-      more.title = "页面菜单";
+      more.title = U.t("页面菜单");
       more.setAttribute("aria-label", "页面菜单");
       more.addEventListener("click", (e) => {
         const r = more.getBoundingClientRect();
@@ -660,7 +660,7 @@
 
     /* ================= Cover picker ================= */
     openCoverPicker(page) {
-      const modal = U.modal({ title: "设置封面", size: "lg" });
+      const modal = U.modal({ title: U.t("设置封面"), size: "lg" });
       const tabs = U.el("div", "cover-tabs");
       const grid = U.el("div", "cover-grid");
       modal.body.appendChild(tabs);
@@ -765,7 +765,7 @@
 
     /* ================= Search modal ================= */
     openSearchModal(initial) {
-      const modal = U.modal({ title: "搜索", size: "lg" });
+      const modal = U.modal({ title: U.t("搜索"), size: "lg" });
       const inp = U.el("input", "modal-input");
       inp.placeholder = "搜索页面和块内容…";
       inp.value = initial || "";
@@ -929,7 +929,7 @@
       }
       if (inboxId) { const p = S.getPage(inboxId); if (!p || p.deleted) inboxId = null; }
       if (!inboxId) {
-        const inbox = S.createPage("root", { title: "待整理", icon: "📥" });
+        const inbox = S.createPage("root", { title: U.t("待整理"), icon: "📥" });
         inboxId = inbox.id;
       }
       this._inboxId = inboxId;
@@ -1505,7 +1505,7 @@
     },
 
     openVersionHistory(page) {
-      const modal = U.modal({ title: "版本历史", onClose: () => { Sidebar.refresh(); this.route(); } });
+      const modal = U.modal({ title: U.t("版本历史"), onClose: () => { Sidebar.refresh(); this.route(); } });
       const list = U.el("div", null);
       modal.body.appendChild(list);
       const versions = S.getVersions(page.id);
@@ -1516,7 +1516,7 @@
         info.innerHTML = '<div class="ver-time">' + U.fmtDate(v.at, true) + '</div><div class="ver-preview">' + U.esc(U.segsText(v.data.title) || "未命名") + '</div>';
         const restore = U.el("button", "db-btn", "恢复此版本");
         restore.addEventListener("click", async () => {
-          const ok = await U.confirmModal({ title: "恢复版本", message: "恢复到此版本？当前内容将被此版本覆盖。", okText: "恢复" });
+          const ok = await U.confirmModal({ title: U.t("恢复版本"), message: "恢复到此版本？当前内容将被此版本覆盖。", okText: "恢复" });
           if (ok) {
             S.restoreVersion(page.id, v.at);
             modal.close();
@@ -1540,7 +1540,7 @@
     },
 
     openRemindersPanel() {
-      const modal = U.modal({ title: "提醒", onClose: () => this.updateBell() });
+      const modal = U.modal({ title: U.t("提醒"), onClose: () => this.updateBell() });
       const list = U.el("div", null);
       modal.body.appendChild(list);
       const render = () => {
@@ -1556,7 +1556,7 @@
           const doneBtn = U.el("button", "db-btn", r.done ? "↺ 恢复" : "✓ 完成");
           doneBtn.addEventListener("click", () => { S.toggleReminder(r.id, !r.done); render(); });
           const del = U.el("button", "icon-btn", U.icon("trash-2", { size: 16 }));
-          del.title = "删除提醒";
+          del.title = U.t("删除提醒");
           del.addEventListener("click", () => { S.removeReminder(r.id); render(); });
           item.appendChild(main); item.appendChild(openBtn); item.appendChild(doneBtn); item.appendChild(del);
           list.appendChild(item);
@@ -1572,7 +1572,7 @@
 
     openAddReminder(page) {
       const p = page || (S.currentPageId ? S.getPage(S.currentPageId) : null);
-      const modal = U.modal({ title: "添加提醒", size: "sm" });
+      const modal = U.modal({ title: U.t("添加提醒"), size: "sm" });
       const title = U.el("input", "modal-input");
       title.placeholder = "提醒内容";
       title.value = p ? (U.segsText(p.title) || "") : "";
@@ -1769,7 +1769,7 @@
 
     /** 快捷键帮助面板（按 ? 打开） */
     openShortcuts() {
-      const modal = U.modal({ title: "快捷键" });
+      const modal = U.modal({ title: U.t("快捷键") });
       const list = U.el("div", "kbd-list");
       const rows = [
         ["Ctrl + K", "搜索页面 / 块"],

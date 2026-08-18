@@ -165,7 +165,7 @@
       const head = U.el("div", "modal-head");
       head.appendChild(U.el("h3", null, U.esc(opts.title || "")));
       const closeX = U.el("button", "icon-btn", U.icon("x", { size: 16 }));
-      closeX.title = "关闭 (Esc)";
+      closeX.title = U.t("关闭 (Esc)");
       head.appendChild(closeX);
       const body = U.el("div", "modal-body");
       const foot = U.el("div", "modal-foot");

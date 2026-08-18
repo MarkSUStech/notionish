@@ -519,7 +519,7 @@
       const blk = (type, text, extra) => Object.assign(newBlock(type, text), extra || {});
 
       // ── 1. 欢迎页 ──
-      const welcome = newPage("root", { title: "欢迎使用 Notionish", icon: "👋", cover: "linear-gradient(135deg,#667eea 0%,#764ba2 100%)" });
+      const welcome = newPage("root", { title: U.t("欢迎使用 Notionish"), icon: "👋", cover: "linear-gradient(135deg,#667eea 0%,#764ba2 100%)" });
       welcome.order = 0;
       const wT1 = blk("toggle", "⌨️ 输入方式");
       wT1.children = [
@@ -550,7 +550,7 @@
       ];
 
       // ── 2. 项目任务看板（数据库） ──
-      const tasks = newPage("root", { title: "项目任务看板", icon: "🗄", database: true, cover: "linear-gradient(135deg,#f093fb 0%,#f5576c 100%)" });
+      const tasks = newPage("root", { title: U.t("项目任务看板"), icon: "🗄", database: true, cover: "linear-gradient(135deg,#f093fb 0%,#f5576c 100%)" });
       tasks.order = 1;
       tasks.schema = { props: [
         defaultProp("名称", "text"),
@@ -588,7 +588,7 @@
       });
 
       // ── 3. 产品例会纪要 ──
-      const notes = newPage("root", { title: "产品例会纪要", icon: "📝", cover: "linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)" });
+      const notes = newPage("root", { title: U.t("产品例会纪要"), icon: "📝", cover: "linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)" });
       notes.order = 2;
       const toggle = blk("toggle", "一、上周进展");
       toggle.children = [
@@ -615,7 +615,7 @@
       ];
 
       // ── 4. 公式速查 ──
-      const formula = newPage("root", { title: "公式速查", icon: "🧮", cover: "linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)" });
+      const formula = newPage("root", { title: U.t("公式速查"), icon: "🧮", cover: "linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)" });
       formula.order = 3;
       formula.children = [
         blk("heading1", "LaTeX 公式速查"),
@@ -630,14 +630,14 @@
       ];
 
       // ── 5. 试卷（文件夹） ──
-      const exam = newPage("root", { title: "试卷", icon: "📋", cover: "linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%)" });
+      const exam = newPage("root", { title: U.t("试卷"), icon: "📋", cover: "linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%)" });
       exam.order = 4;
       exam.children = [
         blk("paragraph", "这里存放 AI 生成的试卷。使用 AI 助手的「出试卷」工具，AI 会从题库中 RAG 检索相关题目并自动组卷。"),
       ];
 
       // ── 6. 灵感收藏 ──
-      const ideas = newPage("root", { title: "灵感收藏", icon: "💡", cover: "linear-gradient(135deg,#fa709a 0%,#fee140 100%)" });
+      const ideas = newPage("root", { title: U.t("灵感收藏"), icon: "💡", cover: "linear-gradient(135deg,#fa709a 0%,#fee140 100%)" });
       ideas.order = 5;
       const iT1 = blk("toggle", "📚 想读的书");
       iT1.children = [
