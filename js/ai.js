@@ -562,9 +562,18 @@
       const open = force != null ? force : !this.panel.classList.contains("open");
       this.panel.classList.toggle("open", open);
       if (open) {
+        this.refreshKbList(); // 打开时刷新知识库列表
         const input = this.panel.querySelector(".ai-input");
         if (input) input.focus({ preventScroll: true });
       }
+    },
+
+    /** 刷新知识库列表（防重复：若已有同名方法则不叠加定时器） */
+    refreshKbList() {
+      if (!this._kbRefreshTimer) {
+        this._kbRefreshTimer = setTimeout(() => { this._kbRefreshTimer = null; this._refreshKbList(); }, 60);
+      }
+      return this._refreshKbList;
     },
 
     /* ================= Chat ================= */

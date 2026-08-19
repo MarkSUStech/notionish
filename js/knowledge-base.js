@@ -214,6 +214,7 @@
         const j = await request("/api/kb/create", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: name.trim() }) });
         location.hash = "kb/" + j.kb.id;
         U.toast(U.t("已创建知识库"));
+        if (global.AI && AI.refreshKbList) AI.refreshKbList(); // 刷新 AI 面板的知识库选项
       } catch (e) { U.toast(U.t("创建失败：") + e.message); }
     },
 
@@ -223,6 +224,7 @@
         await request("/api/kb/" + encodeURIComponent(kbId), { method: "DELETE" });
         location.hash = "kb";
         U.toast("知识库已删除");
+        if (global.AI && AI.refreshKbList) AI.refreshKbList(); // 刷新 AI 面板的知识库选项
       } catch (e) { U.toast("删除失败：" + e.message); }
     },
 
