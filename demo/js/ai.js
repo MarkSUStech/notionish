@@ -824,6 +824,9 @@
         case "list_knowledge_bases": return "列出知识库";
         case "query_knowledge_base": return "检索知识库：" + (args.query || "");
         case "web_search": return "联网搜索：" + (args.query || "");
+        case "search_github": return "GitHub 搜索：" + (args.query || "");
+        case "search_wiki": return "维基搜索：" + (args.query || "");
+        case "search_paper": return "论文搜索：" + (args.query || "");
         case "save_web_to_kb": return "保存网页到知识库：" + (args.url || "");
         case "create_exam": return "生成试卷：" + (args.topic || "综合") + " · " + (args.count || 5) + " 题";
         default: return "执行技能：" + name;
@@ -832,7 +835,8 @@
 
     toolIcon(name) {
       const map = {
-        web_search: "🔍", query_knowledge_base: "📚", list_knowledge_bases: "🗄",
+        web_search: "🔍", search_github: "🐙", search_wiki: "📖", search_paper: "📑",
+        query_knowledge_base: "📚", list_knowledge_bases: "🗄",
         query_memory: "🧠", list_pages: "📄", read_pdf: "📕", read_web: "🌐",
         load_skill: "🧩", create_note: "📝", append_blocks: "➕", create_questions: "❓",
         create_flashcards: "🃏", create_block: "▣", update_block: "✏️", delete_block: "🗑",
@@ -906,6 +910,33 @@
             const j = await res.json().catch(() => ({}));
             return { ok: !!j.ok, text: j.text || "", results: Array.isArray(j.results) ? j.results : [], error: j.error };
           } catch (e) { return { ok: false, error: "联网搜索失败：" + (e.message || String(e)) }; }
+        }
+        case "search_github": {
+          const query = typeof args.query === "string" ? args.query.trim() : "";
+          if (!query) return { ok: true, results: [] };
+          try {
+            const res = await fetch("/api/search/github?q=" + encodeURIComponent(query) + "&count=" + (Number(args.count) || 5) + "&type=" + encodeURIComponent(args.type || "repositories"));
+            const j = await res.json().catch(() => ({}));
+            return { ok: !!j.ok, results: Array.isArray(j.results) ? j.results : [], error: j.error };
+          } catch (e) { return { ok: false, error: "GitHub 搜索失败：" + (e.message || String(e)) }; }
+        }
+        case "search_wiki": {
+          const query = typeof args.query === "string" ? args.query.trim() : "";
+          if (!query) return { ok: true, results: [] };
+          try {
+            const res = await fetch("/api/search/wiki?q=" + encodeURIComponent(query) + "&count=" + (Number(args.count) || 3));
+            const j = await res.json().catch(() => ({}));
+            return { ok: !!j.ok, results: Array.isArray(j.results) ? j.results : [], error: j.error };
+          } catch (e) { return { ok: false, error: "维基搜索失败：" + (e.message || String(e)) }; }
+        }
+        case "search_paper": {
+          const query = typeof args.query === "string" ? args.query.trim() : "";
+          if (!query) return { ok: true, results: [] };
+          try {
+            const res = await fetch("/api/search/paper?q=" + encodeURIComponent(query) + "&count=" + (Number(args.count) || 5));
+            const j = await res.json().catch(() => ({}));
+            return { ok: !!j.ok, results: Array.isArray(j.results) ? j.results : [], error: j.error };
+          } catch (e) { return { ok: false, error: "论文搜索失败：" + (e.message || String(e)) }; }
         }
         case "save_web_to_kb": {
           const url = typeof args.url === "string" ? args.url.trim() : "";

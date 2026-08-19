@@ -498,6 +498,38 @@ async function handleAIRequest(req, res, url) {
     return true;
   }
 
+// ---- 专用搜索：GitHub / Wikipedia / 学术论文 ----
+  if (url === "/api/search/github" && req.method === "GET") {
+    const params = new URL(req.url || "/", "http://127.0.0.1").searchParams;
+    const q = params.get("q") || "";
+    if (!q) { sendJSON(res, 200, { ok: true, results: [] }); return true; }
+    try {
+      const results = await serverAI.githubSearch(q, params.get("count") || 5, params.get("type") || "repositories");
+      sendJSON(res, 200, { ok: true, results });
+    } catch (e) { sendJSON(res, 200, { ok: false, results: [], error: e.message || String(e) }); }
+    return true;
+  }
+  if (url === "/api/search/wiki" && req.method === "GET") {
+    const params = new URL(req.url || "/", "http://127.0.0.1").searchParams;
+    const q = params.get("q") || "";
+    if (!q) { sendJSON(res, 200, { ok: true, results: [] }); return true; }
+    try {
+      const results = await serverAI.wikiSearch(q, params.get("count") || 3);
+      sendJSON(res, 200, { ok: true, results });
+    } catch (e) { sendJSON(res, 200, { ok: false, results: [], error: e.message || String(e) }); }
+    return true;
+  }
+  if (url === "/api/search/paper" && req.method === "GET") {
+    const params = new URL(req.url || "/", "http://127.0.0.1").searchParams;
+    const q = params.get("q") || "";
+    if (!q) { sendJSON(res, 200, { ok: true, results: [] }); return true; }
+    try {
+      const results = await serverAI.paperSearch(q, params.get("count") || 5);
+      sendJSON(res, 200, { ok: true, results });
+    } catch (e) { sendJSON(res, 200, { ok: false, results: [], error: e.message || String(e) }); }
+    return true;
+  }
+
   // ---- 知识库端点 ----
   if (url === "/api/kb/list" && req.method === "GET") {
     sendJSON(res, 200, { ok: true, kbs: kbStore.listKbs() });
@@ -816,7 +848,7 @@ function start() {
       return;
     }
 
-    if ((url.startsWith("/api/ai/") || url.startsWith("/api/memory/") || url.startsWith("/api/questions/") || url.startsWith("/api/kb/") || url.startsWith("/api/web/") || url === "/api/search") && await handleAIRequest(req, res, url)) return;
+    if ((url.startsWith("/api/ai/") || url.startsWith("/api/memory/") || url.startsWith("/api/questions/") || url.startsWith("/api/kb/") || url.startsWith("/api/web/") || url === "/api/search" || url.startsWith("/api/search/")) && await handleAIRequest(req, res, url)) return;
 
     // 插件列表
     if (url === "/api/plugins" && req.method === "GET") {

@@ -679,12 +679,124 @@ async function duckduckgoSearch(query, count) {
 }
 
 /** SearXNG 搜索（备用）：返回 [{ title, url, content, score }] */
+/* SearXNG 搜索结果缓存：同查询 5 分钟内直接复用，避免重复请求导致不稳定 */
+const searxngCache = new Map();
+function searxngCacheKey(base, q, count) { return base + "|" + q + "|" + count; }
+
 async function searxngSearch(config, query, count) {
   const base = String(config.searxngUrl || "http://127.0.0.1:8080").replace(/\/+$/, "");
   const q = encodeURIComponent(String(query || ""));
-  const res = await requestJSON(base + "/search?q=" + q + "&format=json", { method: "GET", timeout: 20000, errorLabel: "SearXNG 搜索失败" });
-  const results = Array.isArray(res.results) ? res.results.slice(0, Math.floor(Number(count) || 5)) : [];
-  return results.map(r => ({ title: r.title || "", url: r.url || "", content: String(r.content || "").slice(0, 500), score: r.score }));
+  const want = Math.floor(Number(count) || 5);
+  const key = searxngCacheKey(base, q, want);
+  const now = Date.now();
+  const hit = searxngCache.get(key);
+  if (hit && now - hit.ts < 5 * 60 * 1000) return hit.results;
+
+  // 重试 2 次（首次超时/失败后等 600ms 再试），应对 SearXNG 偶发不稳定
+  let res = null, lastErr = null;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      res = await requestJSON(base + "/search?q=" + q + "&format=json", { method: "GET", timeout: 15000, errorLabel: "SearXNG 搜索失败" });
+      break;
+    } catch (e) {
+      lastErr = e;
+      if (attempt === 0) await new Promise(r => setTimeout(r, 600));
+    }
+  }
+  if (!res) throw lastErr || new Error("SearXNG 搜索失败");
+  const results = Array.isArray(res.results) ? res.results.slice(0, want) : [];
+  const mapped = results.map(r => ({ title: r.title || "", url: r.url || "", content: String(r.content || "").slice(0, 500), score: r.score }));
+  searxngCache.set(key, { ts: now, results: mapped });
+  if (searxngCache.size > 200) { const k0 = searxngCache.keys().next().value; if (k0) searxngCache.delete(k0); }
+  return mapped;
+}
+
+/* ============ 专用搜索：GitHub / Wikipedia / 学术论文（均免费无需 key） ============ */
+
+/** GitHub 搜索（仓库/代码/议题）：GitHub Search API，匿名限额 10 req/min */
+async function githubSearch(query, count, type) {
+  const q = encodeURIComponent(String(query || ""));
+  const t = ["code", "issues", "commits", "repositories", "users"].includes(type) ? type : "repositories";
+  const res = await requestJSON("https://api.github.com/search/" + t + "?q=" + q + "&per_page=" + Math.min(10, Math.floor(Number(count) || 5)), {
+    method: "GET", timeout: 20000, errorLabel: "GitHub 搜索失败",
+    headers: { "Accept": "application/vnd.github+json", "User-Agent": "Notionish/1.0" },
+  });
+  const items = Array.isArray(res.items) ? res.items.slice(0, Math.floor(Number(count) || 5)) : [];
+  return items.map(it => t === "repositories"
+    ? { title: it.full_name || it.name || "", url: it.html_url || "", content: (it.description || "") + (it.stargazers_count != null ? " ⭐" + it.stargazers_count : "") }
+    : { title: (it.repository ? it.repository.full_name + ": " : "") + (it.title || it.name || it.path || ""), url: it.html_url || "", content: (it.body || it.message || "").slice(0, 500) });
+}
+
+/** Wikipedia 搜索（中文+英文并行，谁快用谁）：MediaWiki API */
+async function wikiSearch(query, count) {
+  const q = encodeURIComponent(String(query || ""));
+  const want = Math.min(10, Math.floor(Number(count) || 5));
+  const results = [];
+  const langs = ["zh", "en"];
+  // 并行请求两种语言，任一成功即可；单语言失败不影响整体
+  const settled = await Promise.allSettled(langs.map(lang =>
+    requestJSON("https://" + lang + ".wikipedia.org/w/api.php?action=query&list=search&srsearch=" + q + "&format=json&srlimit=" + want + "&origin=*", {
+      method: "GET", timeout: 5000, errorLabel: "Wikipedia 搜索失败",
+    }).then(res => {
+      const hits = (res.query && res.query.search) || [];
+      return hits.slice(0, want).map(h => ({
+        title: h.title || "",
+        url: "https://" + lang + ".wikipedia.org/wiki/" + encodeURIComponent(h.title.replace(/ /g, "_")),
+        content: String(h.snippet || "").replace(/<[^>]+>/g, ""),
+      }));
+    })
+  ));
+  for (const s of settled) {
+    if (s.status === "fulfilled" && s.value && s.value.length) {
+      s.value.forEach(r => { if (results.length < want) results.push(r); });
+    }
+    if (results.length >= want) break;
+  }
+  return results.slice(0, want);
+}
+
+/** 学术论文搜索：arXiv（预印本）+ Crossref（期刊/会议） */
+async function paperSearch(query, count) {
+  const q = String(query || "").trim();
+  const want = Math.min(10, Math.floor(Number(count) || 5));
+  const out = [];
+  // arXiv API（Atom XML，解析 title/link/summary）
+  try {
+    const res = await requestJSON("https://export.arxiv.org/api/query?search_query=all:" + encodeURIComponent(q) + "&max_results=" + want, {
+      method: "GET", timeout: 20000, errorLabel: "arXiv 搜索失败",
+    });
+    const entries = String(res || "").match(/<entry>[\s\S]*?<\/entry>/g) || [];
+    entries.slice(0, want).forEach(entry => {
+      const t = entry.match(/<title>([\s\S]*?)<\/title>/);
+      const link = entry.match(/<id>\s*(https?:\/\/[^\s<]+)/);
+      const sum = entry.match(/<summary>([\s\S]*?)<\/summary>/);
+      const id = link && link[1] ? link[1] : "";
+      const doi = entry.match(/arxiv:\s*([^\s<]+)/);
+      out.push({
+        title: t ? t[1].replace(/\s+/g, " ").trim() : "",
+        url: id || (doi ? "https://arxiv.org/abs/" + doi[1] : ""),
+        content: (sum ? sum[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 400) : "") + (doi ? " [arXiv:" + doi[1] + "]" : ""),
+      });
+    });
+  } catch (e) { /* arXiv 失败继续 Crossref */ }
+  // Crossref 补充（若 arXiv 结果不足）
+  if (out.length < want) {
+    try {
+      const res = await requestJSON("https://api.crossref.org/works?query=" + encodeURIComponent(q) + "&rows=" + (want - out.length) + "&select=title,URL,author,issued", {
+        method: "GET", timeout: 15000, errorLabel: "Crossref 搜索失败",
+      });
+      const items = (res.message && res.message.items) || [];
+      items.forEach(it => {
+        if (out.length >= want) return;
+        out.push({
+          title: (it.title && it.title[0]) || "",
+          url: it.URL || "",
+          content: (it.author ? it.author.slice(0, 3).map(a => (a.given || "") + " " + (a.family || "")).join(", ") : "") + (it.issued && it.issued["date-parts"] && it.issued["date-parts"][0] ? " (" + it.issued["date-parts"][0][0] + ")" : ""),
+        });
+      });
+    } catch (e) { /* 忽略 */ }
+  }
+  return out.slice(0, want);
 }
 
 /** embed a batch of texts via Ollama (并行分批，最大 50 条/批) */
@@ -893,6 +1005,19 @@ const AI_TOOLS = [
     query: { type: "string", description: "搜索关键词" },
     count: { type: "number", description: "返回条数，默认 5" }
   }, required: ["query"] } } },
+  { type: "function", function: { name: "search_github", description: "在 GitHub 上搜索开源仓库/代码/议题。当用户要找开源项目、代码实现、库/框架、GitHub 上的东西时使用。", parameters: { type: "object", properties: {
+    query: { type: "string", description: "搜索关键词，如 'notion clone javascript'" },
+    type: { type: "string", enum: ["repositories", "code", "issues", "commits", "users"], description: "搜索类型，默认 repositories" },
+    count: { type: "number", description: "返回条数，默认 5" }
+  }, required: ["query"] } } },
+  { type: "function", function: { name: "search_wiki", description: "在 Wikipedia（中文+英文）搜索百科条目。当用户要查概念定义、人物、事件、术语的百科解释时使用。", parameters: { type: "object", properties: {
+    query: { type: "string", description: "要查的条目或关键词" },
+    count: { type: "number", description: "返回条数，默认 3" }
+  }, required: ["query"] } } },
+  { type: "function", function: { name: "search_paper", description: "搜索学术论文（arXiv 预印本 + Crossref 期刊/会议论文）。当用户要找论文、学术文献、研究资料、DOI 时使用。", parameters: { type: "object", properties: {
+    query: { type: "string", description: "研究主题或关键词，如 'retrieval augmented generation'" },
+    count: { type: "number", description: "返回条数，默认 5" }
+  }, required: ["query"] } } },
   { type: "function", function: { name: "save_web_to_kb", description: "抓取网页正文并存入知识库。只收集文章/博客/教程/文档/百科/论文类资源，跳过搜索引擎首页或结果页（google.com、baidu.com、bing.com 的首页或 /search /s 页）、门户首页、导航页、登录页。搜索到有用的网页后调用；kbId 不填则存入第一个知识库（先 list_knowledge_bases 获取）。", parameters: { type: "object", properties: {
     url: { type: "string", description: "网页网址" },
     kbId: { type: "string", description: "知识库 id（可选）" },
@@ -996,4 +1121,4 @@ function loadSkill(dir, name) {
 
 module.exports = { chunkText, cosine, buildChunkId, hashText, buildPrompt, createIndexStore, DEFAULT_MAX_LEN,
   AI_CONFIG_PATH, AI_INDEX_PATH, SKILLS_DIR, loadAIConfig, saveAIConfig, publicConfig, embedTexts, streamChat, requestJSON, chatOnce, extractChatMessage, AI_TOOLS,
-  htmlToText, fetchUrlText, fetchWebMeta, fetchWebMarkdown, htmlToMarkdown, extractArticleText, fetchRawHtml, duckduckgoSearch, extractDdgUrl, deepseekWebSearch, searxngSearch, parseSkillFrontmatter, scanSkills, loadSkill };
+  htmlToText, fetchUrlText, fetchWebMeta, fetchWebMarkdown, htmlToMarkdown, extractArticleText, fetchRawHtml, duckduckgoSearch, extractDdgUrl, deepseekWebSearch, searxngSearch, githubSearch, wikiSearch, paperSearch, parseSkillFrontmatter, scanSkills, loadSkill };
