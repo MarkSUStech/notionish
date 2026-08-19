@@ -9,7 +9,7 @@ const { StringDecoder } = require("string_decoder");
 
 const DEFAULT_MAX_LEN = 1000;
 const DATA_DIR = process.env.NOTIONISH_DATA_DIR || path.join(__dirname, "data");
-const AI_CONFIG_PATH = path.join(__dirname, "ai-config.json");
+const AI_CONFIG_PATH = process.env.AI_CONFIG_PATH || path.join(__dirname, "ai-config.json");
 const AI_INDEX_PATH = path.join(DATA_DIR, "ai-index.json");
 const SKILLS_DIR = path.join(__dirname, "skills");
 

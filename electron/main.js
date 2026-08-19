@@ -23,7 +23,7 @@ function startServer() {
     if (!serverPath) { reject(new Error("server.js not found in " + candidates.join(", "))); return; }
     serverProcess = fork(serverPath, [], {
       cwd: path.dirname(serverPath),
-      env: { ...process.env, PORT: String(DEFAULT_PORT), NOTIONISH_DATA_DIR: dataDir },
+      env: { ...process.env, PORT: String(DEFAULT_PORT), NOTIONISH_DATA_DIR: dataDir, AI_CONFIG_PATH: path.join(dataDir, "ai-config.json") },
       silent: true,
     });
     serverProcess.stdout.on("data", d => console.log("[server]", d.toString().trim()));
