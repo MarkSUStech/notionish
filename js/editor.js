@@ -1378,7 +1378,7 @@
         e.preventDefault();
         this.handleEnter(blk, blockEl, t);
       } else if (e.key === "Backspace") {
-        // 先删除紧跟光标的块首不可编辑元素（行内公式/提及除外），再判断是否合并到上一块
+        // 先删除紧跟光标的块首不可编辑元素（行内公式/提及等语义元素除外），再判断是否合并到上一块
         const leading = B.leadingNonEditable(t);
         if (leading && !leading.classList.contains("nt-math") && !leading.classList.contains("nt-mention")) {
           e.preventDefault();
@@ -1386,7 +1386,8 @@
           blk.text = B.htmlToSegments(t);
           S.touch(page); S.markDirty();
           B.setCaret(t, 0);
-        } else if (B.caretAtStart(t)) {
+        } else if (B.caretAtStart(t) || (leading && (leading.classList.contains("nt-math") || leading.classList.contains("nt-mention")))) {
+          // 块首是公式/提及：光标在公式前或紧接公式后时，合并到上一块（而非删除公式）
           e.preventDefault();
           this.handleBackspace(blk, blockEl, t);
         }
