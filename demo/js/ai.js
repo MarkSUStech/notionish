@@ -254,8 +254,8 @@
   function inlineToSegments(text) {
     const s = normalizeEmphasis(normalizeInlineDisplayMath(text));
     const segs = [];
-    // $...$ 只当数学公式：开头 $ 后不跟空格/数字/另一个$，单字符公式也支持
-    const re = /(\*\*[^*]+\*\*|`[^`]+`|~~[^~]+~~|\$[^\s\d$][^$\n]*[^\s$]?\$|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g;
+    // $...$ 只当数学公式：前后不能紧贴字母/数字（避免 d^2$ 当起始、x$5 当公式），公式内允许数字开头（如 $6Sd^2$），内容非贪婪限长防跨中文
+    const re = /(\*\*[^*]+\*\*|`[^`]+`|~~[^~]+~~|(?<![0-9A-Za-z])\$(?=[^\s$])[^$\n]{0,60}[^\s$]\$(?![0-9A-Za-z])|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g;
     let last = 0, m;
     while ((m = re.exec(s))) {
       if (m.index > last) segs.push({ t: s.slice(last, m.index) });
@@ -562,9 +562,18 @@
       const open = force != null ? force : !this.panel.classList.contains("open");
       this.panel.classList.toggle("open", open);
       if (open) {
+        this.refreshKbList(); // 打开时刷新知识库列表
         const input = this.panel.querySelector(".ai-input");
         if (input) input.focus({ preventScroll: true });
       }
+    },
+
+    /** 刷新知识库列表（防重复：若已有同名方法则不叠加定时器） */
+    refreshKbList() {
+      if (!this._kbRefreshTimer) {
+        this._kbRefreshTimer = setTimeout(() => { this._kbRefreshTimer = null; this._refreshKbList(); }, 60);
+      }
+      return this._refreshKbList;
     },
 
     /* ================= Chat ================= */

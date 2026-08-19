@@ -1,6 +1,6 @@
 {
   "name": "notionish",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Notionish — 本地优先的 Notion 风格笔记应用",
   "main": "main.js",
   "scripts": {
@@ -28,11 +28,11 @@
       { "from": "../server-kb.js", "to": "server-kb.js" },
       { "from": "../server-mcp.js", "to": "server-mcp.js" },
       { "from": "../server-memory.js", "to": "server-memory.js" },
-      { "from": "../index.html", "to": "index.html" },
+      { "from": "../demo/index.html", "to": "index.html" },
       { "from": "../clip.html", "to": "clip.html" },
-      { "from": "../css", "to": "css" },
-      { "from": "../js", "to": "js" },
-      { "from": "../vendor", "to": "vendor" },
+      { "from": "../demo/css", "to": "css" },
+      { "from": "../demo/js", "to": "js" },
+      { "from": "../demo/vendor", "to": "vendor" },
       { "from": "../skills", "to": "skills" }
     ],
     "win": {
