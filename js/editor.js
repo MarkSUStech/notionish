@@ -1378,9 +1378,9 @@
         e.preventDefault();
         this.handleEnter(blk, blockEl, t);
       } else if (e.key === "Backspace") {
-        // 先删除紧跟光标的块首不可编辑元素（行内公式/提及），再判断是否合并到上一块
+        // 先删除紧跟光标的块首不可编辑元素（行内公式/提及除外），再判断是否合并到上一块
         const leading = B.leadingNonEditable(t);
-        if (leading) {
+        if (leading && !leading.classList.contains("nt-math") && !leading.classList.contains("nt-mention")) {
           e.preventDefault();
           leading.remove();
           blk.text = B.htmlToSegments(t);
