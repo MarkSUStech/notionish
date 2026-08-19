@@ -254,7 +254,7 @@ function saveAIConfig(config, filePath) {
   return next;
 }
 
-/** config shape safe to send to the browser (never includes the API key) */
+/** config shape safe to send to the browser (never includes any API key) */
 function publicConfig(config) {
   return {
     ollamaUrl: config.ollamaUrl,
@@ -262,7 +262,7 @@ function publicConfig(config) {
     openaiBaseUrl: config.openaiBaseUrl,
     openaiModel: config.openaiModel,
     searxngUrl: config.searxngUrl,
-    youtubeApiKey: config.youtubeApiKey,
+    youtubeConfigured: !!config.youtubeApiKey,
     configured: !!config.openaiApiKey,
   };
 }

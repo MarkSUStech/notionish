@@ -176,7 +176,7 @@
         base.value = cfg.openaiBaseUrl || "";
         model.value = cfg.openaiModel || "";
         searxng.value = cfg.searxngUrl || "";
-        ytKey.placeholder = cfg.youtubeApiKey ? U.t("已配置（留空则保持不变）") : "AIza...";
+        ytKey.placeholder = cfg.youtubeConfigured ? U.t("已配置（留空则保持不变）") : "AIza...";
         key.placeholder = cfg.configured ? U.t("已配置（留空则保持不变）") : "sk-...";
       }).catch(() => {});
 
