@@ -238,6 +238,7 @@
     "Embedding 模型": "Embedding model",
     "OpenAI 模型名": "OpenAI model",
     "OpenAI API Key": "OpenAI API Key",
+    "SearXNG 地址（可选，联网搜索用）": "SearXNG URL (optional, for web search)",
     "已配置（留空则保持不变）": "Configured (leave empty to keep)",
     "索引状态加载中…": "Loading index status…",
     "AI 已就绪 · 索引": "AI ready · index",

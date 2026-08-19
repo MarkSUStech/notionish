@@ -889,7 +889,7 @@ const AI_TOOLS = [
     kbId: { type: "string", description: "知识库 id（可选；不填则检索全部知识库，先 list_knowledge_bases 获取 id）" },
     k: { type: "number", description: "返回条数，默认 5" }
   }, required: ["query"] } } },
-  { type: "function", function: { name: "web_search", description: "联网搜索（DeepSeek 原生搜索）。当需要查找最新资料、或工作区/知识库之外的信息时使用；返回整合后的答案文本(text)和引用网址列表(results)。", parameters: { type: "object", properties: {
+  { type: "function", function: { name: "web_search", description: "联网搜索（SearXNG 自托管搜索，或 DeepSeek 原生搜索）。当需要查找最新资料、或工作区/知识库之外的信息时使用；返回整合后的答案文本(text)和引用网址列表(results)。", parameters: { type: "object", properties: {
     query: { type: "string", description: "搜索关键词" },
     count: { type: "number", description: "返回条数，默认 5" }
   }, required: ["query"] } } },

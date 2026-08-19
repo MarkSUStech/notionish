@@ -478,14 +478,22 @@ async function handleAIRequest(req, res, url) {
     return true;
   }
 
-  // ---- 联网搜索（DeepSeek 原生 web_search） ----
+  // ---- 联网搜索（优先 SearXNG，否则 DeepSeek 原生搜索） ----
   if (url === "/api/search" && req.method === "GET") {
     const params = new URL(req.url || "/", "http://127.0.0.1").searchParams;
     const q = params.get("q") || "";
     if (!q) { sendJSON(res, 200, { ok: true, text: "", results: [] }); return true; }
     try {
-      const r = await serverAI.deepseekWebSearch(serverAI.loadAIConfig(), q, params.get("count") || 5);
-      sendJSON(res, 200, { ok: true, text: r.text, results: r.citations });
+      const config = serverAI.loadAIConfig();
+      if (config.searxngUrl && config.searxngUrl.trim()) {
+        // SearXNG 搜索（自托管，通用搜索聚合器）
+        const results = await serverAI.searxngSearch(config, q, params.get("count") || 5);
+        sendJSON(res, 200, { ok: true, text: results.map(r => r.title + "\n" + r.content).join("\n\n"), results: results.map(r => ({ title: r.title, url: r.url })) });
+      } else {
+        // DeepSeek 原生搜索（fallback）
+        const r = await serverAI.deepseekWebSearch(config, q, params.get("count") || 5);
+        sendJSON(res, 200, { ok: true, text: r.text, results: r.citations });
+      }
     } catch (e) { sendJSON(res, 200, { ok: false, text: "", results: [], error: e.message || String(e) }); }
     return true;
   }

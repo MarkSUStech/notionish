@@ -167,12 +167,14 @@
       const base = field("OpenAI Base URL", "openaiBaseUrl", "https://api.openai.com/v1");
       const model = field("OpenAI 模型名", "openaiModel", "gpt-4o-mini");
       const key = field("OpenAI API Key", "openaiApiKey", "sk-...", "password");
+      const searxng = field("SearXNG 地址（可选，联网搜索用）", "searxngUrl", "http://127.0.0.1:8080");
 
       fetch("/api/ai/config").then(r => { if (r.ok) return r.json(); throw 0; }).then(cfg => {
         ollama.value = cfg.ollamaUrl || "";
         embed.value = cfg.embedModel || "";
         base.value = cfg.openaiBaseUrl || "";
         model.value = cfg.openaiModel || "";
+        searxng.value = cfg.searxngUrl || "";
         key.placeholder = cfg.configured ? U.t("已配置（留空则保持不变）") : "sk-...";
       }).catch(() => {});
 
