@@ -2924,15 +2924,28 @@
     const out = [];
     let pos = 0;
     for (const s of segs) {
-      const len = (s.t || "").length;
-      const sStart = pos, sEnd = pos + len;
-      if (len === 0) {
-        // zero-length segments (e.g. inline math): assign to exactly one slice
+      // math/mention 段的长度：与 getCaretOffset 一致（math 算 $...$ 源码长度，mention 算 0）
+      let segLen = 0;
+      if (s.t && s.t.length > 0) {
+        segLen = s.t.length;
+      } else if (s.math != null) {
+        segLen = s.math.length + 2; // $...$ 包裹
+      }
+      // 零长度段（如 mention）：按位置分配
+      const sStart = pos, sEnd = pos + segLen;
+      if (segLen === 0) {
         if (end === Infinity ? pos >= start : (pos >= start && pos < end)) out.push(Object.assign({}, s));
       } else if (sEnd > start && sStart < end) {
-        const from = Math.max(0, start - sStart);
-        const to = Math.min(len, end - sStart);
-        out.push(Object.assign({}, s, { t: s.t.slice(from, to) }));
+        // math 段是原子的：不可在 $...$ 内切分，有重叠则完整保留
+        if (s.math != null) {
+          const from = Math.max(0, start - sStart);
+          const to = Math.min(segLen, end - sStart);
+          if (to > from) out.push(Object.assign({}, s));
+        } else {
+          const from = Math.max(0, start - sStart);
+          const to = Math.min(segLen, end - sStart);
+          out.push(Object.assign({}, s, { t: s.t.slice(from, to) }));
+        }
       }
       pos = sEnd;
     }
