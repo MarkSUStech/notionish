@@ -744,8 +744,12 @@ async function handleAIRequest(req, res, url) {
 function serveStatic(req, res) {
   let urlPath;
   try { urlPath = decodeURIComponent((req.url || "/").split("?")[0]); } catch (e) { urlPath = "/"; }
-  if (urlPath === "/") urlPath = "/index.html";
+  if (urlPath === "/") urlPath = process.env.NOTIONISH_SERVE_DEMO === "1" ? "/demo/index.html" : "/index.html";
   let filePath = path.join(ROOT, path.normalize(urlPath));
+  // 目录访问：默认找 index.html
+  try {
+    if (fs.statSync(filePath).isDirectory()) filePath = path.join(filePath, "index.html");
+  } catch (e) {}
   if (!filePath.startsWith(ROOT)) { res.writeHead(403); res.end("Forbidden"); return; }
   fs.readFile(filePath, (err, data) => {
     if (err) { res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" }); res.end("Not found"); return; }
