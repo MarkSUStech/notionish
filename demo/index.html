@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notionish · 网页笔记</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+<link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <div class="sb-header">
+      <button id="sb-collapse" class="icon-btn" title="折叠侧边栏" data-icon="chevron-left" data-icon-size="18">◀</button>
+      <div class="sb-brand" id="sb-brand">
+        <span class="brand-icon">📝</span>
+        <span class="brand-name">Notionish</span>
+      </div>
+      <button id="sb-new" class="icon-btn" title="新建页面 (Ctrl+N)" data-icon="plus" data-icon-size="18">＋</button>
+    </div>
+    <div class="sb-search">
+      <span class="sb-search-icon" data-icon="search" data-icon-size="16">🔍</span>
+      <input id="sb-search-input" type="text" placeholder="搜索… (Ctrl+K)" autocomplete="off">
+    </div>
+    <nav id="sb-nav" class="sb-scroll">
+      <div class="sb-section" id="sb-favorites-section" hidden>
+        <div class="sb-section-title">⭐ 收藏</div>
+        <div id="sb-favorites"></div>
+      </div>
+      <div class="sb-section" id="sb-kb-section">
+        <div class="sb-section-title"><span>🗄 知识库</span><button id="sb-kb-add" class="sb-section-add" title="新建知识库">＋</button></div>
+        <div id="sb-kb-list"></div>
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-title" id="sb-pages-title" style="cursor:pointer">▼ 私人页面</div>
+        <div id="sb-tree"></div>
+      </div>
+      <div class="sb-section" id="sb-trash-section" hidden>
+        <div class="sb-section-title">🗑 回收站</div>
+        <div id="sb-trash"></div>
+      </div>
+    </nav>
+    <div class="sb-footer">
+      <button id="sb-questions" class="sb-footer-btn" title="题库图谱">🗺 题库</button>
+      <button id="sb-import" class="sb-footer-btn" title="导入 JSON">导入</button>
+      <button id="sb-export" class="sb-footer-btn" title="导出全部为 JSON">导出</button>
+      <button id="sb-theme" class="sb-footer-btn" title="切换主题">🌙 深色</button>
+      <input type="file" id="import-file" accept="application/json,.json" hidden>
+    </div>
+  </aside>
+
+  <div id="main">
+    <header id="topbar">
+      <button id="tb-menu" class="icon-btn" title="菜单" data-icon="menu" data-icon-size="18">☰</button>
+      <div id="breadcrumbs"></div>
+      <div id="topbar-actions"></div>
+    </header>
+    <div id="content"></div>
+  </div>
+
+  <div id="modal-root"></div>
+  <div id="toast-root"></div>
+  <div id="tooltip-root"></div>
+</div>
+
+<script src="../vendor/lucide/lucide.min.js"></script>
+<script>window.name = 'notionish-clip';</script>
+<script src="../js/i18n.js"></script>
+<script src="../js/util.js"></script>
+<script src="../js/theme.js"></script>
+<script src="../js/math.js"></script>
+<script src="../js/mermaid.js"></script>
+<script src="../js/store.js"></script>
+<script src="../js/blocks.js"></script>
+<script src="../js/editor.js"></script>
+<script src="../js/database.js"></script>
+<script src="../js/ide.js"></script>
+<script src="../js/sidebar.js"></script>
+<script src="../js/bridge.js"></script>
+<script src="../js/web.js"></script>
+<script src="../js/pdf.js"></script>
+<script src="../js/ai.js"></script>
+<script src="../js/settings.js"></script>
+<script src="../js/memory.js"></script>
+<script src="../js/question-bank.js"></script>
+<script src="../js/knowledge-base.js"></script>
+<script src="../js/plugin-manager.js"></script>
+<script src="../js/app.js"></script>
+</body>
+</html>
