@@ -529,6 +529,27 @@ async function handleAIRequest(req, res, url) {
     } catch (e) { sendJSON(res, 200, { ok: false, results: [], error: e.message || String(e) }); }
     return true;
   }
+  if (url === "/api/search/bilibili" && req.method === "GET") {
+    const params = new URL(req.url || "/", "http://127.0.0.1").searchParams;
+    const q = params.get("q") || "";
+    if (!q) { sendJSON(res, 200, { ok: true, results: [] }); return true; }
+    try {
+      const results = await serverAI.biliSearch(q, params.get("count") || 5);
+      sendJSON(res, 200, { ok: true, results });
+    } catch (e) { sendJSON(res, 200, { ok: false, results: [], error: e.message || String(e) }); }
+    return true;
+  }
+  if (url === "/api/search/youtube" && req.method === "GET") {
+    const params = new URL(req.url || "/", "http://127.0.0.1").searchParams;
+    const q = params.get("q") || "";
+    if (!q) { sendJSON(res, 200, { ok: true, results: [] }); return true; }
+    try {
+      const config = serverAI.loadAIConfig();
+      const results = await serverAI.youtubeSearch(config, q, params.get("count") || 5);
+      sendJSON(res, 200, { ok: true, results });
+    } catch (e) { sendJSON(res, 200, { ok: false, results: [], error: e.message || String(e) }); }
+    return true;
+  }
 
   // ---- 知识库端点 ----
   if (url === "/api/kb/list" && req.method === "GET") {

@@ -226,6 +226,7 @@ function loadAIConfig(filePath) {
     openaiApiKey: "",
     openaiModel: "gpt-4o-mini",
     searxngUrl: "http://127.0.0.1:8080",
+    youtubeApiKey: "",
   };
   if (!fs.existsSync(filePath)) return defaults;
   try {
@@ -246,6 +247,7 @@ function saveAIConfig(config, filePath) {
     openaiApiKey: typeof config.openaiApiKey === "string" ? config.openaiApiKey.trim() : current.openaiApiKey,
     openaiModel: typeof config.openaiModel === "string" && config.openaiModel.trim() ? config.openaiModel.trim() : current.openaiModel,
     searxngUrl: typeof config.searxngUrl === "string" && config.searxngUrl.trim() ? config.searxngUrl.trim() : current.searxngUrl,
+    youtubeApiKey: typeof config.youtubeApiKey === "string" ? config.youtubeApiKey.trim() : current.youtubeApiKey,
   };
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(next, null, 2));
@@ -260,6 +262,7 @@ function publicConfig(config) {
     openaiBaseUrl: config.openaiBaseUrl,
     openaiModel: config.openaiModel,
     searxngUrl: config.searxngUrl,
+    youtubeApiKey: config.youtubeApiKey,
     configured: !!config.openaiApiKey,
   };
 }
@@ -799,6 +802,60 @@ async function paperSearch(query, count) {
   return out.slice(0, want);
 }
 
+/* ============ 视频搜索：Bilibili（免 key）/ YouTube（可配 key，Invidious 回退） ============ */
+
+/** Bilibili 视频搜索：官方 web 接口（匿名可访问，国内稳定） */
+async function biliSearch(query, count) {
+  const q = encodeURIComponent(String(query || ""));
+  const want = Math.min(10, Math.floor(Number(count) || 5));
+  const res = await requestJSON("https://api.bilibili.com/x/web-interface/search/type?search_type=video&keyword=" + q + "&page=1", {
+    method: "GET", timeout: 12000, errorLabel: "Bilibili 搜索失败",
+    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "Referer": "https://www.bilibili.com" },
+  });
+  const items = (res.data && Array.isArray(res.data.result)) ? res.data.result : [];
+  return items.slice(0, want).map(v => ({
+    title: String(v.title || "").replace(/<[^>]+>/g, ""),
+    url: v.arcurl || (v.bvid ? "https://www.bilibili.com/video/" + v.bvid : ""),
+    content: (v.author ? "UP主：" + v.author : "") + (v.play != null ? " · 播放 " + v.play : "") + (v.duration ? " · " + v.duration : ""),
+  }));
+}
+
+/** YouTube 搜索：优先 Data API v3（需 key），否则尝试 Invidious 公共实例 */
+async function youtubeSearch(config, query, count) {
+  const q = encodeURIComponent(String(query || ""));
+  const want = Math.min(10, Math.floor(Number(count) || 5));
+  const key = config.youtubeApiKey || "";
+  // 1) YouTube Data API v3（配置了 key 时最稳定）
+  if (key.trim()) {
+    try {
+      const res = await requestJSON("https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&q=" + q + "&maxResults=" + want + "&key=" + encodeURIComponent(key.trim()), {
+        method: "GET", timeout: 12000, errorLabel: "YouTube 搜索失败",
+      });
+      const items = Array.isArray(res.items) ? res.items : [];
+      return items.slice(0, want).map(it => ({
+        title: (it.snippet && it.snippet.title) || "",
+        url: "https://www.youtube.com/watch?v=" + (it.id && it.id.videoId || ""),
+        content: (it.snippet && it.snippet.channelTitle) || "",
+      }));
+    } catch (e) { /* key 无效等，回退 Invidious */ }
+  }
+  // 2) Invidious 公共实例（无需 key）
+  const INSTANCES = ["https://inv.nadeko.net", "https://invidious.nerdvpn.de", "https://yewtu.be", "https://invidious.f5.si"];
+  for (const inst of INSTANCES) {
+    try {
+      const res = await requestJSON(inst + "/api/v1/search?q=" + q + "&type=video", { method: "GET", timeout: 8000, errorLabel: "Invidious 搜索失败" });
+      if (Array.isArray(res)) {
+        return res.slice(0, want).map(v => ({
+          title: v.title || "",
+          url: "https://www.youtube.com/watch?v=" + (v.videoId || ""),
+          content: (v.author || "") + (v.lengthSeconds ? " · " + Math.floor(v.lengthSeconds / 60) + "分" : ""),
+        }));
+      }
+    } catch (e) { /* 尝试下一个实例 */ }
+  }
+  return [];
+}
+
 /** embed a batch of texts via Ollama (并行分批，最大 50 条/批) */
 async function embedTexts(config, texts) {
   texts = (texts || []).filter(t => typeof t === "string" && t.trim());
@@ -1018,6 +1075,14 @@ const AI_TOOLS = [
     query: { type: "string", description: "研究主题或关键词，如 'retrieval augmented generation'" },
     count: { type: "number", description: "返回条数，默认 5" }
   }, required: ["query"] } } },
+  { type: "function", function: { name: "search_bilibili", description: "在 Bilibili（哔哩哔哩）搜索视频。当用户要找视频教程、课程、演示、纪录片等视频内容时使用。", parameters: { type: "object", properties: {
+    query: { type: "string", description: "搜索关键词" },
+    count: { type: "number", description: "返回条数，默认 5" }
+  }, required: ["query"] } } },
+  { type: "function", function: { name: "search_youtube", description: "在 YouTube 搜索视频。当用户要找英文视频教程、课程、演讲等视频内容时使用。", parameters: { type: "object", properties: {
+    query: { type: "string", description: "搜索关键词" },
+    count: { type: "number", description: "返回条数，默认 5" }
+  }, required: ["query"] } } },
   { type: "function", function: { name: "save_web_to_kb", description: "抓取网页正文并存入知识库。只收集文章/博客/教程/文档/百科/论文类资源，跳过搜索引擎首页或结果页（google.com、baidu.com、bing.com 的首页或 /search /s 页）、门户首页、导航页、登录页。搜索到有用的网页后调用；kbId 不填则存入第一个知识库（先 list_knowledge_bases 获取）。", parameters: { type: "object", properties: {
     url: { type: "string", description: "网页网址" },
     kbId: { type: "string", description: "知识库 id（可选）" },
@@ -1121,4 +1186,4 @@ function loadSkill(dir, name) {
 
 module.exports = { chunkText, cosine, buildChunkId, hashText, buildPrompt, createIndexStore, DEFAULT_MAX_LEN,
   AI_CONFIG_PATH, AI_INDEX_PATH, SKILLS_DIR, loadAIConfig, saveAIConfig, publicConfig, embedTexts, streamChat, requestJSON, chatOnce, extractChatMessage, AI_TOOLS,
-  htmlToText, fetchUrlText, fetchWebMeta, fetchWebMarkdown, htmlToMarkdown, extractArticleText, fetchRawHtml, duckduckgoSearch, extractDdgUrl, deepseekWebSearch, searxngSearch, githubSearch, wikiSearch, paperSearch, parseSkillFrontmatter, scanSkills, loadSkill };
+  htmlToText, fetchUrlText, fetchWebMeta, fetchWebMarkdown, htmlToMarkdown, extractArticleText, fetchRawHtml, duckduckgoSearch, extractDdgUrl, deepseekWebSearch, searxngSearch, githubSearch, wikiSearch, paperSearch, biliSearch, youtubeSearch, parseSkillFrontmatter, scanSkills, loadSkill };

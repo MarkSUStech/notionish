@@ -26,7 +26,7 @@ check("chunk id is deterministic", ai.buildChunkId("pg1", "blk2", 0) === ai.buil
 check("chunk id differs by index", ai.buildChunkId("pg1", "blk2", 0) !== ai.buildChunkId("pg1", "blk2", 1));
 
 // ---- function calling (skills) ----
-check("AI_TOOLS defines 25 skills", Array.isArray(ai.AI_TOOLS) && ai.AI_TOOLS.length === 25 && ai.AI_TOOLS.every(t => t.type === "function" && t.function.name));
+check("AI_TOOLS defines 27 skills", Array.isArray(ai.AI_TOOLS) && ai.AI_TOOLS.length === 27 && ai.AI_TOOLS.every(t => t.type === "function" && t.function.name));
 check("AI_TOOLS includes block editing skills", ai.AI_TOOLS.some(t => t.function.name === "create_block") && ai.AI_TOOLS.some(t => t.function.name === "update_block") && ai.AI_TOOLS.some(t => t.function.name === "delete_block") && ai.AI_TOOLS.some(t => t.function.name === "move_block") && ai.AI_TOOLS.some(t => t.function.name === "load_skill") && ai.AI_TOOLS.some(t => t.function.name === "create_web_page") && ai.AI_TOOLS.some(t => t.function.name === "create_pdf_page"));
 check("AI_TOOLS includes ask_block_types", ai.AI_TOOLS.some(t => t.function.name === "ask_block_types"));
 check("AI_TOOLS includes memory tools", ai.AI_TOOLS.some(t => t.function.name === "query_memory") && ai.AI_TOOLS.some(t => t.function.name === "save_memory"));

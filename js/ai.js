@@ -827,6 +827,8 @@
         case "search_github": return "GitHub 搜索：" + (args.query || "");
         case "search_wiki": return "维基搜索：" + (args.query || "");
         case "search_paper": return "论文搜索：" + (args.query || "");
+        case "search_bilibili": return "Bilibili 视频搜索：" + (args.query || "");
+        case "search_youtube": return "YouTube 视频搜索：" + (args.query || "");
         case "save_web_to_kb": return "保存网页到知识库：" + (args.url || "");
         case "create_exam": return "生成试卷：" + (args.topic || "综合") + " · " + (args.count || 5) + " 题";
         default: return "执行技能：" + name;
@@ -835,7 +837,7 @@
 
     toolIcon(name) {
       const map = {
-        web_search: "🔍", search_github: "🐙", search_wiki: "📖", search_paper: "📑",
+        web_search: "🔍", search_github: "🐙", search_wiki: "📖", search_paper: "📑", search_bilibili: "📺", search_youtube: "▶️",
         query_knowledge_base: "📚", list_knowledge_bases: "🗄",
         query_memory: "🧠", list_pages: "📄", read_pdf: "📕", read_web: "🌐",
         load_skill: "🧩", create_note: "📝", append_blocks: "➕", create_questions: "❓",
@@ -937,6 +939,24 @@
             const j = await res.json().catch(() => ({}));
             return { ok: !!j.ok, results: Array.isArray(j.results) ? j.results : [], error: j.error };
           } catch (e) { return { ok: false, error: "论文搜索失败：" + (e.message || String(e)) }; }
+        }
+        case "search_bilibili": {
+          const query = typeof args.query === "string" ? args.query.trim() : "";
+          if (!query) return { ok: true, results: [] };
+          try {
+            const res = await fetch("/api/search/bilibili?q=" + encodeURIComponent(query) + "&count=" + (Number(args.count) || 5));
+            const j = await res.json().catch(() => ({}));
+            return { ok: !!j.ok, results: Array.isArray(j.results) ? j.results : [], error: j.error };
+          } catch (e) { return { ok: false, error: "Bilibili 搜索失败：" + (e.message || String(e)) }; }
+        }
+        case "search_youtube": {
+          const query = typeof args.query === "string" ? args.query.trim() : "";
+          if (!query) return { ok: true, results: [] };
+          try {
+            const res = await fetch("/api/search/youtube?q=" + encodeURIComponent(query) + "&count=" + (Number(args.count) || 5));
+            const j = await res.json().catch(() => ({}));
+            return { ok: !!j.ok, results: Array.isArray(j.results) ? j.results : [], error: j.error };
+          } catch (e) { return { ok: false, error: "YouTube 搜索失败：" + (e.message || String(e)) }; }
         }
         case "save_web_to_kb": {
           const url = typeof args.url === "string" ? args.url.trim() : "";
