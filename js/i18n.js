@@ -240,6 +240,7 @@
     "OpenAI API Key": "OpenAI API Key",
     "SearXNG 地址（可选，联网搜索用）": "SearXNG URL (optional, for web search)",
     "YouTube API Key（可选，视频搜索用）": "YouTube API Key (optional, for video search)",
+    "代理地址（可选，默认读系统代理）": "Proxy URL (optional, defaults to system proxy)",
     "Bilibili 视频搜索：": "Bilibili video search: ",
     "YouTube 视频搜索：": "YouTube video search: ",
     "已配置（留空则保持不变）": "Configured (leave empty to keep)",

@@ -227,6 +227,7 @@ function loadAIConfig(filePath) {
     openaiModel: "gpt-4o-mini",
     searxngUrl: "http://127.0.0.1:8080",
     youtubeApiKey: "",
+    proxyUrl: "",
   };
   if (!fs.existsSync(filePath)) return defaults;
   try {
@@ -248,6 +249,7 @@ function saveAIConfig(config, filePath) {
     openaiModel: typeof config.openaiModel === "string" && config.openaiModel.trim() ? config.openaiModel.trim() : current.openaiModel,
     searxngUrl: typeof config.searxngUrl === "string" && config.searxngUrl.trim() ? config.searxngUrl.trim() : current.searxngUrl,
     youtubeApiKey: typeof config.youtubeApiKey === "string" ? config.youtubeApiKey.trim() : current.youtubeApiKey,
+    proxyUrl: typeof config.proxyUrl === "string" && config.proxyUrl.trim() ? config.proxyUrl.trim() : current.proxyUrl,
   };
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, JSON.stringify(next, null, 2));
@@ -262,6 +264,7 @@ function publicConfig(config) {
     openaiBaseUrl: config.openaiBaseUrl,
     openaiModel: config.openaiModel,
     searxngUrl: config.searxngUrl,
+    proxyUrl: config.proxyUrl,
     youtubeConfigured: !!config.youtubeApiKey,
     configured: !!config.openaiApiKey,
   };
@@ -269,26 +272,72 @@ function publicConfig(config) {
 
 /* ---------------- HTTP helpers ---------------- */
 
+/* ===== 系统代理检测（Windows 注册表 / 环境变量 / 配置） ===== */
+let _proxyCache = { value: null, ts: 0 };
+
+/** 读取 ai-config.json 的代理配置（可选，覆盖系统代理） */
+function configProxyUrl() {
+  try {
+    const cfg = loadAIConfig();
+    if (cfg && typeof cfg.proxyUrl === "string" && cfg.proxyUrl.trim()) return cfg.proxyUrl.trim();
+  } catch (e) {}
+  return "";
+}
+
+/** 读取环境变量代理（HTTPS_PROXY / HTTP_PROXY / ALL_PROXY） */
+function envProxyUrl() {
+  const p = process.env.HTTPS_PROXY || process.env.https_proxy || process.env.HTTP_PROXY || process.env.http_proxy || process.env.ALL_PROXY || process.env.all_proxy;
+  return p ? p.trim() : "";
+}
+
+/** 读取 Windows 系统代理（注册表 ProxyEnable + ProxyServer） */
+function windowsSystemProxy() {
+  try {
+    const os = require("os");
+    if (os.platform() !== "win32") return "";
+    const { execSync } = require("child_process");
+    const reg = execSync('reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD', { encoding: "utf8", timeout: 3000, windowsHide: true }).toString();
+    const enabled = /0x([0-9a-fA-F]+)/.exec(reg);
+    if (!enabled || parseInt(enabled[1], 16) !== 1) return "";
+    const reg2 = execSync('reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyServer', { encoding: "utf8", timeout: 3000, windowsHide: true }).toString();
+    const m = reg2.match(/ProxyServer\s+REG_SZ\s+(\S+)/i);
+    if (!m || !m[1]) return "";
+    let proxy = m[1];
+    if (!/^https?:\/\//i.test(proxy)) proxy = "http://" + proxy;
+    return proxy;
+  } catch (e) { return ""; }
+}
+
+/** 获取当前生效的代理地址（配置 > 环境变量 > Windows 系统代理；5 分钟缓存） */
+function detectProxy() {
+  const now = Date.now();
+  if (_proxyCache.value !== null && now - _proxyCache.ts < 5 * 60 * 1000) return _proxyCache.value;
+  const url = configProxyUrl() || envProxyUrl() || windowsSystemProxy();
+  _proxyCache = { value: url || null, ts: now };
+  return _proxyCache.value;
+}
+
+/** 解析代理地址为 {host, port} */
+function parseProxy(p) {
+  if (!p) return null;
+  const u = new URL(/^https?:\/\//i.test(p) ? p : "http://" + p);
+  return { host: u.hostname, port: u.port ? parseInt(u.port, 10) : (u.protocol === "https:" ? 443 : 8080) };
+}
+
 function requestJSON(url, options) {
   options = options || {};
   return new Promise((resolve, reject) => {
     let parsed;
     try { parsed = new URL(url); } catch (e) { reject(new Error("无效的 URL")); return; }
-    const mod = parsed.protocol === "https:" ? https : http;
     const body = options.body != null ? (typeof options.body === "string" ? options.body : JSON.stringify(options.body)) : null;
     const headers = Object.assign({}, options.headers || {});
     if (body) {
       headers["Content-Type"] = "application/json";
       headers["Content-Length"] = Buffer.byteLength(body);
     }
-    const req = mod.request({
-      hostname: parsed.hostname,
-      port: parsed.port || (parsed.protocol === "https:" ? 443 : 80),
-      path: parsed.pathname + parsed.search,
-      method: options.method || "GET",
-      headers,
-      timeout: options.timeout || 30000,
-    }, res => {
+    const timeout = options.timeout || 30000;
+
+    const finish = (req, res) => {
       const chunks = [];
       res.on("data", c => chunks.push(c));
       res.on("end", () => {
@@ -307,7 +356,69 @@ function requestJSON(url, options) {
         }
         try { resolve(JSON.parse(text)); } catch (e) { resolve({ raw: text }); }
       });
-    });
+    };
+
+    if (parsed.protocol === "https:") {
+      const proxy = parseProxy(detectProxy());
+      if (proxy) {
+        // 通过代理 CONNECT 隧道
+        const connectReq = http.request({
+          host: proxy.host, port: proxy.port, method: "CONNECT",
+          path: parsed.hostname + ":" + (parsed.port || 443), timeout,
+        });
+        connectReq.on("connect", (cres, socket) => {
+          if (cres.statusCode !== 200) { socket.destroy(); reject(new Error("代理 CONNECT 失败: " + cres.statusCode)); return; }
+          const tls = require("tls");
+          const tlsSocket = tls.connect({ socket, servername: parsed.hostname }, () => {
+            const req = https.request({
+              createConnection: () => tlsSocket,
+              hostname: parsed.hostname, port: parsed.port || 443,
+              path: parsed.pathname + parsed.search, method: options.method || "GET",
+              headers, timeout,
+            }, res => finish(req, res));
+            req.on("timeout", () => req.destroy(new Error("请求超时")));
+            req.on("error", reject);
+            if (body) req.write(body);
+            req.end();
+          });
+          tlsSocket.on("error", reject);
+        });
+        connectReq.on("timeout", () => connectReq.destroy(new Error("代理连接超时")));
+        connectReq.on("error", reject);
+        connectReq.end();
+        return;
+      }
+      // 直连
+      const req = https.request({
+        hostname: parsed.hostname, port: parsed.port || 443,
+        path: parsed.pathname + parsed.search, method: options.method || "GET",
+        headers, timeout,
+      }, res => finish(req, res));
+      req.on("timeout", () => req.destroy(new Error("请求超时")));
+      req.on("error", reject);
+      if (body) req.write(body);
+      req.end();
+      return;
+    }
+
+    // http：如有代理走代理转发（绝对 URL），否则直连
+    const proxy = parseProxy(detectProxy());
+    if (proxy) {
+      const req = http.request({
+        host: proxy.host, port: proxy.port, method: options.method || "GET",
+        path: parsed.href, headers, timeout,
+      }, res => finish(req, res));
+      req.on("timeout", () => req.destroy(new Error("请求超时")));
+      req.on("error", reject);
+      if (body) req.write(body);
+      req.end();
+      return;
+    }
+    const req = http.request({
+      hostname: parsed.hostname, port: parsed.port || 80,
+      path: parsed.pathname + parsed.search, method: options.method || "GET",
+      headers, timeout,
+    }, res => finish(req, res));
     req.on("timeout", () => req.destroy(new Error("请求超时")));
     req.on("error", reject);
     if (body) req.write(body);
@@ -1220,4 +1331,4 @@ function loadSkill(dir, name) {
 
 module.exports = { chunkText, cosine, buildChunkId, hashText, buildPrompt, createIndexStore, DEFAULT_MAX_LEN,
   AI_CONFIG_PATH, AI_INDEX_PATH, SKILLS_DIR, loadAIConfig, saveAIConfig, publicConfig, embedTexts, streamChat, requestJSON, chatOnce, extractChatMessage, AI_TOOLS,
-  htmlToText, fetchUrlText, fetchWebMeta, fetchWebMarkdown, htmlToMarkdown, extractArticleText, fetchRawHtml, duckduckgoSearch, extractDdgUrl, deepseekWebSearch, searxngSearch, githubSearch, wikiSearch, paperSearch, biliSearch, youtubeSearch, parseSkillFrontmatter, scanSkills, loadSkill };
+  htmlToText, fetchUrlText, fetchWebMeta, fetchWebMarkdown, htmlToMarkdown, extractArticleText, fetchRawHtml, duckduckgoSearch, extractDdgUrl, deepseekWebSearch, searxngSearch, githubSearch, wikiSearch, paperSearch, biliSearch, youtubeSearch, detectProxy, parseProxy, parseSkillFrontmatter, scanSkills, loadSkill };

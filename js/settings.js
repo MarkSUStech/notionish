@@ -169,6 +169,7 @@
       const key = field("OpenAI API Key", "openaiApiKey", "sk-...", "password");
       const searxng = field("SearXNG 地址（可选，联网搜索用）", "searxngUrl", "http://127.0.0.1:8080");
       const ytKey = field("YouTube API Key（可选，视频搜索用）", "youtubeApiKey", "AIza...", "password");
+      const proxy = field("代理地址（可选，默认读系统代理）", "proxyUrl", "http://127.0.0.1:7890");
 
       fetch("/api/ai/config").then(r => { if (r.ok) return r.json(); throw 0; }).then(cfg => {
         ollama.value = cfg.ollamaUrl || "";
@@ -176,6 +177,7 @@
         base.value = cfg.openaiBaseUrl || "";
         model.value = cfg.openaiModel || "";
         searxng.value = cfg.searxngUrl || "";
+        proxy.value = cfg.proxyUrl || "";
         ytKey.placeholder = cfg.youtubeConfigured ? U.t("已配置（留空则保持不变）") : "AIza...";
         key.placeholder = cfg.configured ? U.t("已配置（留空则保持不变）") : "sk-...";
       }).catch(() => {});
