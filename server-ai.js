@@ -804,14 +804,48 @@ async function paperSearch(query, count) {
 
 /* ============ 视频搜索：Bilibili（免 key）/ YouTube（可配 key，Invidious 回退） ============ */
 
-/** Bilibili 视频搜索：官方 web 接口（匿名可访问，国内稳定） */
+/* Bilibili cookie 缓存（buvid3 防风控，10 分钟有效） */
+let biliCookieCache = { cookie: "", ts: 0 };
+
+/** 获取 Bilibili 的 buvid cookie（先访问首页，风控需要） */
+async function getBiliCookie() {
+  const now = Date.now();
+  if (biliCookieCache.cookie && now - biliCookieCache.ts < 10 * 60 * 1000) return biliCookieCache.cookie;
+  try {
+    const res = await new Promise((resolve, reject) => {
+      const https = require("https");
+      const req = https.get("https://www.bilibili.com/", { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0" }, timeout: 10000 }, r => {
+        r.resume();
+        r.on("end", () => resolve(r));
+      });
+      req.on("timeout", () => { req.destroy(); reject(new Error("timeout")); });
+      req.on("error", reject);
+    });
+    const cookies = (res.headers["set-cookie"] || []).map(c => c.split(";")[0]).join("; ");
+    if (cookies) { biliCookieCache = { cookie: cookies, ts: now }; return cookies; }
+    return "";
+  } catch (e) { return biliCookieCache.cookie || ""; }
+}
+
+/** Bilibili 视频搜索：官方 web 接口（先取 cookie 防风控，国内稳定） */
 async function biliSearch(query, count) {
   const q = encodeURIComponent(String(query || ""));
   const want = Math.min(10, Math.floor(Number(count) || 5));
-  const res = await requestJSON("https://api.bilibili.com/x/web-interface/search/type?search_type=video&keyword=" + q + "&page=1", {
+  const cookie = await getBiliCookie();
+  let res = await requestJSON("https://api.bilibili.com/x/web-interface/search/type?search_type=video&keyword=" + q + "&page=1", {
     method: "GET", timeout: 12000, errorLabel: "Bilibili 搜索失败",
-    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "Referer": "https://www.bilibili.com" },
+    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0", "Referer": "https://search.bilibili.com/", "Cookie": cookie },
   });
+  if (res.code === -412) {
+    // 风控：清缓存重试一次
+    biliCookieCache = { cookie: "", ts: 0 };
+    const cookie2 = await getBiliCookie();
+    const res2 = await requestJSON("https://api.bilibili.com/x/web-interface/search/type?search_type=video&keyword=" + q + "&page=1", {
+      method: "GET", timeout: 12000, errorLabel: "Bilibili 搜索失败",
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0", "Referer": "https://search.bilibili.com/", "Cookie": cookie2 },
+    });
+    res = res2;
+  }
   const items = (res.data && Array.isArray(res.data.result)) ? res.data.result : [];
   return items.slice(0, want).map(v => ({
     title: String(v.title || "").replace(/<[^>]+>/g, ""),
